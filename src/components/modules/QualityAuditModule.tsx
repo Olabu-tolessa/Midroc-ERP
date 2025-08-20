@@ -513,7 +513,10 @@ export const QualityAuditModule: React.FC = () => {
     if (!selectedTask) return null;
 
     const progress = getProgressPercentage(selectedTask.checkpoints);
-    const canEdit = isProjectManager || user?.id === selectedTask.assigned_to;
+    const canEdit = user?.role === 'admin' ||
+                    user?.role === 'general_manager' ||
+                    user?.role === 'project_manager' ||
+                    user?.id === selectedTask.assigned_to;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
