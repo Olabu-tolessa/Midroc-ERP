@@ -6,6 +6,8 @@ export interface User {
   department?: string;
   avatar?: string;
   permissions?: UserPermissions;
+  approved?: boolean;
+  created_at?: string;
 }
 
 export interface UserPermissions {
