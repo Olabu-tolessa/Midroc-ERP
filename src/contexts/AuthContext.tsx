@@ -262,6 +262,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPendingUsers(prev => prev.filter(u => u.id !== userId));
   };
 
+  const createUser = async (userData: {name: string, email: string, password: string, role: string, department: string}): Promise<{success: boolean, message?: string}> => {
+    // Check if user already exists
+    const existingUser = mockUsers.find(u => u.email === userData.email);
+    const existingPendingUser = pendingUsers.find(u => u.email === userData.email);
+
+    if (existingUser || existingPendingUser) {
+      return { success: false, message: 'User with this email already exists' };
+    }
+
+    const newUser: User = {
+      id: Date.now().toString(),
+      name: userData.name,
+      email: userData.email,
+      role: userData.role as 'admin' | 'general_manager' | 'project_manager' | 'engineer' | 'consultant' | 'employee',
+      department: userData.department,
+      approved: true, // Admin-created users are immediately approved
+      created_at: new Date().toISOString()
+    };
+
+    // Add directly to approved users
+    mockUsers.push(newUser);
+    return { success: true, message: `User ${userData.name} has been created successfully` };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -276,7 +300,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         canAccessModule,
         pendingUsers,
         approveUser,
-        rejectUser
+        rejectUser,
+        createUser
       }}
     >
       {children}
