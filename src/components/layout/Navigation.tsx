@@ -26,7 +26,7 @@ const modules = [
   { id: 'projects', name: 'Construction Projects', icon: HardHat },
   { id: 'supervision', name: 'Supervision', icon: Eye },
   { id: 'consulting', name: 'Consulting', icon: Briefcase },
-  { id: 'contracts', name: 'Contract Management', icon: FileContract },
+  { id: 'contracts', name: 'Contract Management', icon: FileText },
   { id: 'hr', name: 'Human Resources', icon: Users },
   { id: 'finance', name: 'Finance', icon: DollarSign },
   { id: 'bi', name: 'Business Intelligence', icon: BarChart3 },
