@@ -179,6 +179,15 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
               </div>
             )}
 
+            {success && (
+              <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                {success}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
