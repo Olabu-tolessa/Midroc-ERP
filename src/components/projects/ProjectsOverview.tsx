@@ -323,8 +323,7 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
       });
 
       // Generate and save the document
-      const buffer = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const blob = await Packer.toBlob(doc);
       saveAs(blob, `${project.name.replace(/\s+/g, '_')}_Project_Report.docx`);
 
       setNotification({
