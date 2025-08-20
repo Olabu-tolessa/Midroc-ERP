@@ -14,6 +14,7 @@ interface AuthContextType {
   pendingUsers: User[];
   approveUser: (userId: string) => void;
   rejectUser: (userId: string) => void;
+  createUser: (userData: {name: string, email: string, password: string, role: string, department: string}) => Promise<{success: boolean, message?: string}>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
