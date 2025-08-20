@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
+import { PendingApprovalPage } from './components/auth/PendingApprovalPage';
 import { Navigation } from './components/layout/Navigation';
 import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
