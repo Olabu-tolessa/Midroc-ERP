@@ -161,6 +161,7 @@ const pendingUsersList: User[] = [];
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingUsers, setPendingUsers] = useState<User[]>(pendingUsersList);
 
   useEffect(() => {
     // Check for stored user on mount
