@@ -212,7 +212,18 @@ export const QualityAuditModule: React.FC = () => {
   };
 
   const toggleCheckpoint = (taskId: string, checkpointId: string) => {
-    if (!isProjectManager && user?.id !== tasks.find(t => t.id === taskId)?.assigned_to) {
+    if (!user) return;
+
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    // Allow admin, general_manager, project_manager, or the assigned user to toggle
+    const canToggle = user.role === 'admin' ||
+                      user.role === 'general_manager' ||
+                      user.role === 'project_manager' ||
+                      user.id === task.assigned_to;
+
+    if (!canToggle) {
       return;
     }
 
