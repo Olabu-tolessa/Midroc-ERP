@@ -194,32 +194,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: false, message: 'Invalid email or password' };
   };
 
-  const signup = async (name: string, email: string, password: string, role: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string, role: string): Promise<{success: boolean, message?: string}> => {
     setLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Check if user already exists
     const existingUser = mockUsers.find(u => u.email === email);
-    if (existingUser) {
+    const existingPendingUser = pendingUsers.find(u => u.email === email);
+
+    if (existingUser || existingPendingUser) {
       setLoading(false);
-      return false;
+      return { success: false, message: 'User with this email already exists' };
     }
-    
+
     const newUser: User = {
       id: Date.now().toString(),
       name,
       email,
       role: role as 'admin' | 'general_manager' | 'project_manager' | 'engineer' | 'consultant' | 'employee',
-      department: 'General'
+      department: 'General',
+      approved: false,
+      created_at: new Date().toISOString()
     };
-    
-    mockUsers.push(newUser);
-    setUser(newUser);
-    localStorage.setItem('erp_user', JSON.stringify(newUser));
+
+    // Add to pending users list instead of approved users
+    setPendingUsers(prev => [...prev, newUser]);
     setLoading(false);
-    return true;
+    return { success: true, message: 'Account created successfully! Please wait for admin approval before logging in.' };
   };
 
   const logout = () => {
