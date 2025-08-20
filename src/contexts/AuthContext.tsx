@@ -12,9 +12,11 @@ interface AuthContextType {
   hasRole: (roles: string[]) => boolean;
   canAccessModule: (module: string) => boolean;
   pendingUsers: User[];
+  activeUsers: User[];
   approveUser: (userId: string) => void;
   rejectUser: (userId: string) => void;
   createUser: (userData: {name: string, email: string, password: string, role: string, department: string}) => Promise<{success: boolean, message?: string}>;
+  refreshUsers: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,88 +101,116 @@ const MODULE_ACCESS = {
   crm: ['admin', 'general_manager', 'consultant']
 };
 
-// Mock users for demo
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Anderson',
-    email: 'admin@midroc.com',
-    role: 'admin',
-    department: 'Administration',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Sarah Mitchell',
-    email: 'gm@midroc.com',
-    role: 'general_manager',
-    department: 'Construction Management',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '3',
-    name: 'Michael Rodriguez',
-    email: 'pm@midroc.com',
-    role: 'project_manager',
-    department: 'Highway Construction',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '4',
-    name: 'Emma Thompson',
-    email: 'consultant@midroc.com',
-    role: 'consultant',
-    department: 'Urban Planning',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '5',
-    name: 'David Chen',
-    email: 'engineer@midroc.com',
-    role: 'engineer',
-    department: 'Structural Engineering',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '6',
-    name: 'Lisa Johnson',
-    email: 'employee@midroc.com',
-    role: 'employee',
-    department: 'General Construction',
-    approved: true,
-    created_at: '2024-01-01T00:00:00Z'
+// Initialize with localStorage data or defaults
+const getInitialActiveUsers = (): User[] => {
+  const storedActiveUsers = localStorage.getItem('erp_active_users');
+  if (storedActiveUsers) {
+    return JSON.parse(storedActiveUsers);
   }
-];
+  
+  // Default active users
+  return [
+    {
+      id: '1',
+      name: 'John Anderson',
+      email: 'admin@midroc.com',
+      role: 'admin',
+      department: 'Administration',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: '2',
+      name: 'Sarah Mitchell',
+      email: 'gm@midroc.com',
+      role: 'general_manager',
+      department: 'Construction Management',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: '3',
+      name: 'Michael Rodriguez',
+      email: 'pm@midroc.com',
+      role: 'project_manager',
+      department: 'Highway Construction',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: '4',
+      name: 'Emma Thompson',
+      email: 'consultant@midroc.com',
+      role: 'consultant',
+      department: 'Urban Planning',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: '5',
+      name: 'David Chen',
+      email: 'engineer@midroc.com',
+      role: 'engineer',
+      department: 'Structural Engineering',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    },
+    {
+      id: '6',
+      name: 'Lisa Johnson',
+      email: 'employee@midroc.com',
+      role: 'employee',
+      department: 'General Construction',
+      approved: true,
+      created_at: '2024-01-01T00:00:00Z'
+    }
+  ];
+};
 
-// Pending users waiting for approval
-const pendingUsersList: User[] = [];
+const getInitialPendingUsers = (): User[] => {
+  const storedPendingUsers = localStorage.getItem('erp_pending_users');
+  if (storedPendingUsers) {
+    return JSON.parse(storedPendingUsers);
+  }
+  return [];
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pendingUsers, setPendingUsers] = useState<User[]>(pendingUsersList);
+  const [activeUsers, setActiveUsers] = useState<User[]>(getInitialActiveUsers());
+  const [pendingUsers, setPendingUsers] = useState<User[]>(getInitialPendingUsers());
 
   useEffect(() => {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('erp_user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('erp_user');
+      }
     }
     setLoading(false);
   }, []);
 
+  // Save users to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('erp_active_users', JSON.stringify(activeUsers));
+  }, [activeUsers]);
+
+  useEffect(() => {
+    localStorage.setItem('erp_pending_users', JSON.stringify(pendingUsers));
+  }, [pendingUsers]);
+
   const login = async (email: string, password: string): Promise<{success: boolean, message?: string}> => {
     setLoading(true);
-
+    
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const foundUser = mockUsers.find(u => u.email === email);
+    
+    const foundUser = activeUsers.find(u => u.email === email);
     if (foundUser && password === 'password') {
       if (!foundUser.approved) {
         setLoading(false);
@@ -191,26 +221,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
       return { success: true };
     }
-
+    
     setLoading(false);
     return { success: false, message: 'Invalid email or password' };
   };
 
   const signup = async (name: string, email: string, password: string, role: string): Promise<{success: boolean, message?: string}> => {
     setLoading(true);
-
+    
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email === email);
+    
+    // Check if user already exists in active or pending users
+    const existingActiveUser = activeUsers.find(u => u.email === email);
     const existingPendingUser = pendingUsers.find(u => u.email === email);
-
-    if (existingUser || existingPendingUser) {
+    
+    if (existingActiveUser || existingPendingUser) {
       setLoading(false);
       return { success: false, message: 'User with this email already exists' };
     }
-
+    
     const newUser: User = {
       id: Date.now().toString(),
       name,
@@ -220,11 +250,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       approved: false,
       created_at: new Date().toISOString()
     };
-
-    // Add to pending users list instead of approved users
-    setPendingUsers(prev => [...prev, newUser]);
+    
+    // Add to pending users list
+    setPendingUsers(prev => {
+      const updated = [...prev, newUser];
+      return updated;
+    });
+    
     setLoading(false);
-    return { success: true, message: 'Account created successfully! Please wait for admin approval before logging in.' };
+    return { 
+      success: true, 
+      message: 'Account created successfully! Your account is pending admin approval. Once approved, you will be able to access your account.' 
+    };
   };
 
   const logout = () => {
@@ -253,7 +290,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const userToApprove = pendingUsers.find(u => u.id === userId);
     if (userToApprove) {
       const approvedUser = { ...userToApprove, approved: true };
-      mockUsers.push(approvedUser);
+      
+      // Add to active users
+      setActiveUsers(prev => [...prev, approvedUser]);
+      
+      // Remove from pending users
       setPendingUsers(prev => prev.filter(u => u.id !== userId));
     }
   };
@@ -264,10 +305,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const createUser = async (userData: {name: string, email: string, password: string, role: string, department: string}): Promise<{success: boolean, message?: string}> => {
     // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email === userData.email);
+    const existingActiveUser = activeUsers.find(u => u.email === userData.email);
     const existingPendingUser = pendingUsers.find(u => u.email === userData.email);
-
-    if (existingUser || existingPendingUser) {
+    
+    if (existingActiveUser || existingPendingUser) {
       return { success: false, message: 'User with this email already exists' };
     }
 
@@ -281,13 +322,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       created_at: new Date().toISOString()
     };
 
-    // Add directly to approved users
-    mockUsers.push(newUser);
+    // Add directly to active users
+    setActiveUsers(prev => [...prev, newUser]);
     return { success: true, message: `User ${userData.name} has been created successfully` };
   };
 
+  const refreshUsers = () => {
+    // Force refresh from localStorage
+    setActiveUsers(getInitialActiveUsers());
+    setPendingUsers(getInitialPendingUsers());
+  };
+
   return (
-    <AuthContext.Provider
+    <AuthContext.Provider 
       value={{
         user,
         login,
@@ -299,9 +346,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         hasRole,
         canAccessModule,
         pendingUsers,
+        activeUsers,
         approveUser,
         rejectUser,
-        createUser
+        createUser,
+        refreshUsers
       }}
     >
       {children}
