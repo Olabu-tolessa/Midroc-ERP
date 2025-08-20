@@ -10,6 +10,9 @@ import { FinanceModule } from './components/modules/FinanceModule';
 import { BusinessIntelligenceModule } from './components/modules/BusinessIntelligenceModule';
 import { QualityAuditModule } from './components/modules/QualityAuditModule';
 import { CRMModule } from './components/modules/CRMModule';
+import SupervisionModule from './components/modules/SupervisionModule';
+import ConsultingModule from './components/modules/ConsultingModule';
+import ContractualManagementModule from './components/modules/ContractualManagementModule';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
