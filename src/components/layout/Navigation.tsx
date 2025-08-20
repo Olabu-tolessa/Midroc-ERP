@@ -12,7 +12,7 @@ import {
   HardHat,
   Eye,
   Briefcase,
-  FileContract
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
