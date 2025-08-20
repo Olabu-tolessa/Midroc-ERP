@@ -172,22 +172,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{success: boolean, message?: string}> => {
     setLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password === 'password') {
+      if (!foundUser.approved) {
+        setLoading(false);
+        return { success: false, message: 'Your account is pending approval. Please contact the administrator.' };
+      }
       setUser(foundUser);
       localStorage.setItem('erp_user', JSON.stringify(foundUser));
       setLoading(false);
-      return true;
+      return { success: true };
     }
-    
+
     setLoading(false);
-    return false;
+    return { success: false, message: 'Invalid email or password' };
   };
 
   const signup = async (name: string, email: string, password: string, role: string): Promise<boolean> => {
