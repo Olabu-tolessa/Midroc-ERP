@@ -15,6 +15,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
     role: 'employee'
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { signup, loading } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
