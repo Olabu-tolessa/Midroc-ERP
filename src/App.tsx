@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
 import { Navigation } from './components/layout/Navigation';
-import { DashboardModule } from './components/modules/DashboardModule';
+import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
 import { HRModule } from './components/modules/HRModule';
 import { FinanceModule } from './components/modules/FinanceModule';
