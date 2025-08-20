@@ -164,25 +164,32 @@ const UserManagementModule: React.FC = () => {
       department: ''
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      
-      // Here you would create the user directly in Supabase as approved
-      console.log('Creating user:', formData);
-      
-      setNotification({
-        type: 'success',
-        message: `User ${formData.name} has been created successfully and can now login.`
-      });
-      
-      setShowCreateModal(false);
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        role: 'employee',
-        department: ''
-      });
+
+      const result = await createUser(formData);
+
+      if (result.success) {
+        setNotification({
+          type: 'success',
+          message: result.message || `User ${formData.name} has been created successfully and can now login.`
+        });
+
+        setShowCreateModal(false);
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          role: 'employee',
+          department: ''
+        });
+      } else {
+        setNotification({
+          type: 'error',
+          message: result.message || 'Failed to create user. Please try again.'
+        });
+      }
+
       setTimeout(() => setNotification(null), 3000);
     };
 
