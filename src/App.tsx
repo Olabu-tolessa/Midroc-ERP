@@ -35,12 +35,31 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
+    if (showPendingApproval && pendingApprovalEmail) {
+      return (
+        <PendingApprovalPage
+          userEmail={pendingApprovalEmail}
+          onBackToLogin={() => {
+            setShowPendingApproval(false);
+            setPendingApprovalEmail(null);
+            setAuthMode('login');
+          }}
+        />
+      );
+    }
+
     return (
       <>
         {authMode === 'login' ? (
           <LoginPage onSignupClick={() => setAuthMode('signup')} />
         ) : (
-          <SignupPage onLoginClick={() => setAuthMode('login')} />
+          <SignupPage
+            onLoginClick={() => setAuthMode('login')}
+            onSignupSuccess={(email) => {
+              setPendingApprovalEmail(email);
+              setShowPendingApproval(true);
+            }}
+          />
         )}
       </>
     );
