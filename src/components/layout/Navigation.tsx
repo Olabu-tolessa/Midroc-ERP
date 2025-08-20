@@ -1,15 +1,18 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  Users, 
-  DollarSign, 
-  BarChart3, 
-  Shield, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Users,
+  DollarSign,
+  BarChart3,
+  Shield,
   UserCheck,
   LogOut,
   Building2,
-  HardHat
+  HardHat,
+  Eye,
+  Briefcase,
+  FileContract
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
