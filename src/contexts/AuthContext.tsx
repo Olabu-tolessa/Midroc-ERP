@@ -3,14 +3,17 @@ import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, role: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{success: boolean, message?: string}>;
+  signup: (name: string, email: string, password: string, role: string) => Promise<{success: boolean, message?: string}>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
   hasPermission: (permission: string) => boolean;
   hasRole: (roles: string[]) => boolean;
   canAccessModule: (module: string) => boolean;
+  pendingUsers: User[];
+  approveUser: (userId: string) => void;
+  rejectUser: (userId: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
