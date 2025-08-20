@@ -48,6 +48,12 @@ const AppContent: React.FC = () => {
         return <DashboardModule />;
       case 'projects':
         return <ProjectManagementModule />;
+      case 'supervision':
+        return <SupervisionModule />;
+      case 'consulting':
+        return <ConsultingModule />;
+      case 'contracts':
+        return <ContractualManagementModule />;
       case 'hr':
         return <HRModule />;
       case 'finance':
