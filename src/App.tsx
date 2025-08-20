@@ -13,6 +13,7 @@ import { CRMModule } from './components/modules/CRMModule';
 import SupervisionModule from './components/modules/SupervisionModule';
 import ConsultingModule from './components/modules/ConsultingModule';
 import ContractualManagementModule from './components/modules/ContractualManagementModule';
+import UserManagementModule from './components/modules/UserManagementModule';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
