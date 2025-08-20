@@ -130,7 +130,7 @@ const UserManagementModule: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Users</p>
               <p className="text-2xl font-bold text-green-600">
-                {pendingUsers.length + 6} {/* 6 existing approved users */}
+                {pendingUsers.length + 6}
               </p>
             </div>
             <Users className="w-8 h-8 text-green-600" />
