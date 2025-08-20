@@ -21,7 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { User } from '../../types';
 
 const UserManagementModule: React.FC = () => {
-  const { user, pendingUsers, approveUser, rejectUser, createUser } = useAuth();
+  const { user, pendingUsers, activeUsers, approveUser, rejectUser, createUser, refreshUsers } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'create'>('active');
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -29,63 +29,10 @@ const UserManagementModule: React.FC = () => {
 
   const isAdmin = user?.role === 'admin' || user?.role === 'general_manager';
 
-  // Mock active users (in real app, get from Supabase)
-  const activeUsers: User[] = [
-    {
-      id: '1',
-      name: 'John Anderson',
-      email: 'admin@midroc.com',
-      role: 'admin',
-      department: 'Administration',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '2',
-      name: 'Sarah Mitchell',
-      email: 'gm@midroc.com',
-      role: 'general_manager',
-      department: 'Construction Management',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '3',
-      name: 'Michael Rodriguez',
-      email: 'pm@midroc.com',
-      role: 'project_manager',
-      department: 'Highway Construction',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '4',
-      name: 'Emma Thompson',
-      email: 'consultant@midroc.com',
-      role: 'consultant',
-      department: 'Urban Planning',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '5',
-      name: 'David Chen',
-      email: 'engineer@midroc.com',
-      role: 'engineer',
-      department: 'Structural Engineering',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '6',
-      name: 'Lisa Johnson',
-      email: 'employee@midroc.com',
-      role: 'employee',
-      department: 'General Construction',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    }
-  ];
+  // Refresh users data when component mounts
+  React.useEffect(() => {
+    refreshUsers();
+  }, []);
 
   if (!isAdmin) {
     return (
