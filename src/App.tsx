@@ -20,6 +20,8 @@ const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [currentModule, setCurrentModule] = useState('dashboard');
+  const [pendingApprovalEmail, setPendingApprovalEmail] = useState<string | null>(null);
+  const [showPendingApproval, setShowPendingApproval] = useState(false);
 
   if (loading) {
     return (
