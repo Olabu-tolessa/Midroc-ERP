@@ -35,7 +35,7 @@ const modules = [
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleChange }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, canAccessModule } = useAuth();
 
   return (
     <div className="bg-white shadow-lg h-screen w-64 fixed left-0 top-0 flex flex-col border-r border-gray-200">
