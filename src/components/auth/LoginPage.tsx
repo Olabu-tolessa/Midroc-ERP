@@ -15,15 +15,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    const success = await login(email, password);
-    if (!success) {
-      setError('Invalid email or password');
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.message || 'Login failed');
     }
   };
 
