@@ -28,7 +28,8 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+    setSuccess('');
+
     if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -44,9 +45,19 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
       return;
     }
 
-    const success = await signup(formData.name, formData.email, formData.password, formData.role);
-    if (!success) {
-      setError('Registration failed. Please try again.');
+    const result = await signup(formData.name, formData.email, formData.password, formData.role);
+    if (result.success) {
+      setSuccess(result.message || 'Account created successfully!');
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'employee'
+      });
+    } else {
+      setError(result.message || 'Registration failed. Please try again.');
     }
   };
 
