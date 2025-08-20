@@ -21,7 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { User } from '../../types';
 
 const UserManagementModule: React.FC = () => {
-  const { user, pendingUsers, approveUser, rejectUser } = useAuth();
+  const { user, pendingUsers, approveUser, rejectUser, createUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'create'>('active');
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
