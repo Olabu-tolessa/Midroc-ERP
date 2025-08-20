@@ -49,12 +49,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
 
         {/* Demo Credentials */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-white mb-2">Demo Credentials:</h3>
+          <h3 className="font-semibold text-white mb-2">Demo Accounts (Password: password):</h3>
           <div className="text-sm text-green-100 space-y-1">
-            <p><span className="font-medium">Admin:</span> admin@midroc.com / password</p>
-            <p><span className="font-medium">General Manager:</span> gm@midroc.com / password</p>
-            <p><span className="font-medium">Project Manager:</span> pm@midroc.com / password</p>
-            <p><span className="font-medium">Consultant:</span> consultant@midroc.com / password</p>
+            <p><span className="font-medium">Admin:</span> admin@midroc.com (Full Access)</p>
+            <p><span className="font-medium">General Manager:</span> gm@midroc.com (Management Access)</p>
+            <p><span className="font-medium">Project Manager:</span> pm@midroc.com (Project Access)</p>
+            <p><span className="font-medium">Consultant:</span> consultant@midroc.com (Consulting Access)</p>
+            <p><span className="font-medium">Engineer:</span> engineer@midroc.com (Technical Access)</p>
+            <p><span className="font-medium">Employee:</span> employee@midroc.com (Limited Access)</p>
           </div>
         </div>
 
