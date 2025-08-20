@@ -7,7 +7,7 @@ interface SignupPageProps {
   onSignupSuccess?: (email: string) => void;
 }
 
-export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
+export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
