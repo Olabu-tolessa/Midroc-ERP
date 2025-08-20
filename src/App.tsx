@@ -55,6 +55,8 @@ const AppContent: React.FC = () => {
         return <ConsultingModule />;
       case 'contracts':
         return <ContractualManagementModule />;
+      case 'users':
+        return <UserManagementModule />;
       case 'hr':
         return <HRModule />;
       case 'finance':
