@@ -102,7 +102,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
       {/* Navigation Menu */}
       <nav className="flex-1 py-4">
         <div className="space-y-1">
-          {modules.map((module) => {
+          {modules.filter(module => canAccessModule(module.id)).map((module) => {
             const Icon = module.icon;
             const isActive = currentModule === module.id;
 
@@ -122,6 +122,18 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
             );
           })}
         </div>
+
+        {/* Role-based access notice */}
+        {user?.role === 'employee' && (
+          <div className="px-6 mt-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-700 font-medium">Employee Access</p>
+              <p className="text-xs text-blue-600 mt-1">
+                Limited module access based on your role. Contact admin for additional permissions.
+              </p>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Logout */}
