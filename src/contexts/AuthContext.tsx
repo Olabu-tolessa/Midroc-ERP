@@ -247,8 +247,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return allowedRoles.includes(user.role);
   };
 
+  const approveUser = (userId: string) => {
+    const userToApprove = pendingUsers.find(u => u.id === userId);
+    if (userToApprove) {
+      const approvedUser = { ...userToApprove, approved: true };
+      mockUsers.push(approvedUser);
+      setPendingUsers(prev => prev.filter(u => u.id !== userId));
+    }
+  };
+
+  const rejectUser = (userId: string) => {
+    setPendingUsers(prev => prev.filter(u => u.id !== userId));
+  };
+
   return (
-    <AuthContext.Provider 
+    <AuthContext.Provider
       value={{
         user,
         login,
@@ -258,7 +271,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loading,
         hasPermission,
         hasRole,
-        canAccessModule
+        canAccessModule,
+        pendingUsers,
+        approveUser,
+        rejectUser
       }}
     >
       {children}
