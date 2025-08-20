@@ -104,44 +104,59 @@ const mockUsers: User[] = [
     name: 'John Anderson',
     email: 'admin@midroc.com',
     role: 'admin',
-    department: 'Administration'
+    department: 'Administration',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   },
   {
     id: '2',
     name: 'Sarah Mitchell',
     email: 'gm@midroc.com',
     role: 'general_manager',
-    department: 'Construction Management'
+    department: 'Construction Management',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   },
   {
     id: '3',
     name: 'Michael Rodriguez',
     email: 'pm@midroc.com',
     role: 'project_manager',
-    department: 'Highway Construction'
+    department: 'Highway Construction',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   },
   {
     id: '4',
     name: 'Emma Thompson',
     email: 'consultant@midroc.com',
     role: 'consultant',
-    department: 'Urban Planning'
+    department: 'Urban Planning',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   },
   {
     id: '5',
     name: 'David Chen',
     email: 'engineer@midroc.com',
     role: 'engineer',
-    department: 'Structural Engineering'
+    department: 'Structural Engineering',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   },
   {
     id: '6',
     name: 'Lisa Johnson',
     email: 'employee@midroc.com',
     role: 'employee',
-    department: 'General Construction'
+    department: 'General Construction',
+    approved: true,
+    created_at: '2024-01-01T00:00:00Z'
   }
 ];
+
+// Pending users waiting for approval
+const pendingUsersList: User[] = [];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
