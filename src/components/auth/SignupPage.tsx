@@ -128,13 +128,14 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-700 focus:border-transparent transition-all"
               >
-                <option value="admin">Administrator</option>
-                <option value="general_manager">General Manager</option>
                 <option value="project_manager">Project Manager</option>
                 <option value="engineer">Engineer</option>
                 <option value="consultant">Consultant</option>
                 <option value="employee">Employee</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Admin and General Manager accounts are created by existing administrators.
+              </p>
             </div>
 
             <div>
