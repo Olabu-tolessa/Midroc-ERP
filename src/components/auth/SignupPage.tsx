@@ -57,6 +57,13 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
         confirmPassword: '',
         role: 'employee'
       });
+
+      // Trigger success callback after a short delay to show success message
+      setTimeout(() => {
+        if (onSignupSuccess) {
+          onSignupSuccess(formData.email);
+        }
+      }, 2000);
     } else {
       setError(result.message || 'Registration failed. Please try again.');
     }
