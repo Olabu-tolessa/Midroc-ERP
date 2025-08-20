@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 interface SignupPageProps {
   onLoginClick: () => void;
+  onSignupSuccess?: (email: string) => void;
 }
 
 export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
