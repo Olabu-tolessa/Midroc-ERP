@@ -102,11 +102,11 @@ const ROLE_PERMISSIONS = {
 
 // Module access configuration
 const MODULE_ACCESS = {
-  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee'],
-  projects: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee', 'client'],
+  projects: ['admin', 'general_manager', 'project_manager', 'engineer', 'client'],
   supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
   consulting: ['admin', 'general_manager', 'consultant'],
-  contracts: ['admin', 'general_manager'],
+  contracts: ['admin', 'general_manager', 'client'],
   users: ['admin'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
