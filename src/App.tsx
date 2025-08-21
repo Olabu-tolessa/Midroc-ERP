@@ -22,6 +22,21 @@ const AppContent: React.FC = () => {
   const [pendingApprovalEmail, setPendingApprovalEmail] = useState<string | null>(null);
   const [showPendingApproval, setShowPendingApproval] = useState(false);
 
+  // Handle hash-based navigation for quick actions
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash && ['dashboard', 'projects', 'users', 'contracts', 'hr', 'finance', 'qa', 'crm', 'supervision', 'consulting'].includes(hash)) {
+        setCurrentModule(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Check initial hash
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
