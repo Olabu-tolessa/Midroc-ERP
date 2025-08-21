@@ -255,8 +255,8 @@ const ContractualManagementModule: React.FC = () => {
         ...selectedForm,
         client_assigned_to: assignData.client_assigned_to,
         contractor_assigned_to: assignData.contractor_assigned_to,
-        client_user_name: mockUsers.find(u => u.id === assignData.client_assigned_to)?.name || '',
-        contractor_user_name: mockUsers.find(u => u.id === assignData.contractor_assigned_to)?.name || '',
+        client_user_name: allUsers.find(u => u.id === assignData.client_assigned_to)?.name || '',
+        contractor_user_name: allUsers.find(u => u.id === assignData.contractor_assigned_to)?.name || '',
         status: 'assigned' as const
       };
 
