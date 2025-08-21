@@ -1336,6 +1336,11 @@ const ContractualManagementModule: React.FC = () => {
       return form.client_assigned_to === user?.id;
     }
 
+    // Contractor users can only see forms assigned to them as contractor
+    if (user?.role === 'contractor') {
+      return form.contractor_assigned_to === user?.id;
+    }
+
     // Regular users can only see forms assigned to them
     return form.client_assigned_to === user?.id || form.contractor_assigned_to === user?.id;
   });
