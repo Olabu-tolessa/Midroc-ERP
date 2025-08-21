@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, FileText, Calendar, CheckCircle, Clock, AlertTriangle, Eye, Edit, Trash2, Download, Users, PenTool } from 'lucide-react';
+import { Plus, Search, FileText, Calendar, CheckCircle, Clock, AlertTriangle, Eye, Edit, Trash2, Download, Users, PenTool, UserPlus } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
@@ -19,7 +19,11 @@ interface ContractForm {
   contractor_signature?: string;
   client_signed_at?: string;
   contractor_signed_at?: string;
-  status: 'draft' | 'pending_signatures' | 'client_signed' | 'fully_signed' | 'completed';
+  client_assigned_to?: string;
+  contractor_assigned_to?: string;
+  client_user_name?: string;
+  contractor_user_name?: string;
+  status: 'draft' | 'assigned' | 'pending_signatures' | 'client_signed' | 'fully_signed' | 'completed';
   created_by: string;
   created_by_name: string;
   created_at: string;
@@ -135,8 +139,9 @@ const ContractualManagementModule: React.FC = () => {
   const [showNewFormModal, setShowNewFormModal] = useState(false);
   const [showFormDetailsModal, setShowFormDetailsModal] = useState(false);
   const [showSigningModal, setShowSigningModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState<ContractForm | null>(null);
-  const [activeTab, setActiveTab] = useState<'contracts' | 'forms'>('contracts');
+  const [activeTab, setActiveTab] = useState<'contracts' | 'forms'>('forms');
   const [signingAs, setSigningAs] = useState<'client' | 'contractor'>('client');
 
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager';
@@ -186,8 +191,11 @@ const ContractualManagementModule: React.FC = () => {
           site_location: 'Addis Ababa - Adama Highway',
           effective_date: '2024-01-15',
           form_data: FORM_TEMPLATES.document_acquisition.fields,
-          client_signature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAA',
-          status: 'client_signed',
+          client_assigned_to: '7',
+          contractor_assigned_to: '8',
+          client_user_name: 'Ahmed Mohammed',
+          contractor_user_name: 'Sara Wilson',
+          status: 'assigned',
           created_by: '1',
           created_by_name: 'John Anderson',
           created_at: '2024-01-10T00:00:00Z'
@@ -201,6 +209,104 @@ const ContractualManagementModule: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const AssignModal = () => {
+    const [assignData, setAssignData] = useState({
+      client_assigned_to: '',
+      contractor_assigned_to: '',
+      client_user_name: '',
+      contractor_user_name: ''
+    });
+
+    const mockUsers = [
+      { id: '7', name: 'Ahmed Mohammed', email: 'ahmed@client.com', role: 'client' },
+      { id: '8', name: 'Sara Wilson', email: 'sara@contractor.com', role: 'contractor' },
+      { id: '9', name: 'Mike Johnson', email: 'mike@midroc.com', role: 'project_manager' },
+      { id: '10', name: 'Lisa Chen', email: 'lisa@consultant.com', role: 'consultant' }
+    ];
+
+    const handleAssign = () => {
+      if (!selectedForm) return;
+
+      const updatedForm = {
+        ...selectedForm,
+        client_assigned_to: assignData.client_assigned_to,
+        contractor_assigned_to: assignData.contractor_assigned_to,
+        client_user_name: mockUsers.find(u => u.id === assignData.client_assigned_to)?.name || '',
+        contractor_user_name: mockUsers.find(u => u.id === assignData.contractor_assigned_to)?.name || '',
+        status: 'assigned' as const
+      };
+
+      setContractForms(prev => prev.map(form => 
+        form.id === selectedForm.id ? updatedForm : form
+      ));
+
+      setShowAssignModal(false);
+      setSelectedForm(updatedForm);
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Assign Form for Signing</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Client</label>
+              <select
+                value={assignData.client_assigned_to}
+                onChange={(e) => setAssignData({...assignData, client_assigned_to: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              >
+                <option value="">Select Client User</option>
+                {mockUsers.filter(u => u.role === 'client' || u.role === 'project_manager').map(user => (
+                  <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Contractor</label>
+              <select
+                value={assignData.contractor_assigned_to}
+                onChange={(e) => setAssignData({...assignData, contractor_assigned_to: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              >
+                <option value="">Select Contractor User</option>
+                {mockUsers.filter(u => u.role === 'contractor' || u.role === 'project_manager').map(user => (
+                  <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                Assigned users will be able to sign this form according to their assigned role.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAssign}
+              disabled={!assignData.client_assigned_to || !assignData.contractor_assigned_to}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign Users
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const CreateFormModal = () => {
@@ -341,7 +447,6 @@ const ContractualManagementModule: React.FC = () => {
 
   const SigningModal = () => {
     const sigCanvas = useRef<SignatureCanvas>(null);
-    const [isSigningMode, setIsSigningMode] = useState(false);
 
     const clearSignature = () => {
       sigCanvas.current?.clear();
@@ -352,6 +457,20 @@ const ContractualManagementModule: React.FC = () => {
       
       const signatureData = sigCanvas.current?.toDataURL();
       if (!signatureData) return;
+
+      // Check if user is authorized to sign as the selected role
+      const canSignAsClient = user?.id === selectedForm.client_assigned_to;
+      const canSignAsContractor = user?.id === selectedForm.contractor_assigned_to;
+
+      if (signingAs === 'client' && !canSignAsClient) {
+        alert('You are not authorized to sign as client for this form.');
+        return;
+      }
+
+      if (signingAs === 'contractor' && !canSignAsContractor) {
+        alert('You are not authorized to sign as contractor for this form.');
+        return;
+      }
 
       const updatedForm = {
         ...selectedForm,
@@ -376,6 +495,9 @@ const ContractualManagementModule: React.FC = () => {
 
     if (!selectedForm) return null;
 
+    const canSignAsClient = user?.id === selectedForm.client_assigned_to;
+    const canSignAsContractor = user?.id === selectedForm.contractor_assigned_to;
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -383,6 +505,23 @@ const ContractualManagementModule: React.FC = () => {
             Digital Signature - {signingAs === 'client' ? 'Client' : 'Contractor'}
           </h3>
           
+          {/* Authorization Check */}
+          {signingAs === 'client' && !canSignAsClient && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-red-700">
+                You are not authorized to sign as client for this form.
+              </p>
+            </div>
+          )}
+
+          {signingAs === 'contractor' && !canSignAsContractor && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-red-700">
+                You are not authorized to sign as contractor for this form.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div className="border-2 border-gray-300 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-2">Sign below:</p>
@@ -415,7 +554,11 @@ const ContractualManagementModule: React.FC = () => {
                 </button>
                 <button
                   onClick={saveSignature}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  disabled={
+                    (signingAs === 'client' && !canSignAsClient) || 
+                    (signingAs === 'contractor' && !canSignAsContractor)
+                  }
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save Signature
                 </button>
@@ -458,303 +601,117 @@ const ContractualManagementModule: React.FC = () => {
   const FormDetailsModal = () => {
     if (!selectedForm) return null;
 
+    const canSignAsClient = user?.id === selectedForm.client_assigned_to;
+    const canSignAsContractor = user?.id === selectedForm.contractor_assigned_to;
+
     const renderFormContent = () => {
       switch (selectedForm.template_type) {
-        case 'document_acquisition':
-          return (
-            <div className="space-y-6" ref={formRef}>
-              {/* Header */}
-              <div className="border border-gray-300 p-4 bg-white">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-700 font-bold">LOGO</span>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold">Gubalafto Consulting Architects & Engineers P.L.C</h2>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm">Document No: GCAE/COF/001</div>
-                    <div className="text-sm">Issue No: 1</div>
-                    <div className="text-sm">Page: 1 of 1</div>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-100 p-2 text-center">
-                  <h3 className="font-bold">Acquisition of Document Form</h3>
-                </div>
-                
-                <div className="flex justify-between mt-2">
-                  <div className="text-sm">Effective Date: {selectedForm.effective_date}</div>
-                </div>
-              </div>
-
-              {/* Form Content */}
-              <div className="border border-gray-300 p-6 bg-white">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div><strong>PROJECT:</strong> {selectedForm.project_name}</div>
-                    <div><strong>SITE LOCATION:</strong> {selectedForm.site_location}</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div><strong>CLIENT:</strong> {selectedForm.client_name}</div>
-                    <div><strong>CONTRACTOR:</strong> {selectedForm.contractor_name}</div>
-                  </div>
-                  
-                  <div className="mt-6">
-                    <p>This is to acknowledge that I have received the following set of documents concerning the project:</p>
-                  </div>
-                  
-                  <div className="space-y-2 mt-4">
-                    <div className="flex">
-                      <span className="w-8">1.</span>
-                      <span>Contract Documents No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">2.</span>
-                      <span>Architectural Drawings No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">3.</span>
-                      <span>Structural Drawings No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">4.</span>
-                      <span>Electrical Drawing No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">5.</span>
-                      <span>Sanitary Drawing No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">6.</span>
-                      <span>Mechanical Drawing No. ________________________________</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">7.</span>
-                      <span>Bill of Quantities ________________________________ Pages</span>
-                    </div>
-                    <div className="flex">
-                      <span className="w-8">8.</span>
-                      <span>Other No. ________________________________</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8 grid grid-cols-2 gap-8">
-                    <div className="text-center">
-                      <div className="border-b border-gray-400 pb-2 mb-2">
-                        <strong>DOCUMENT HANDED OVER</strong>
-                      </div>
-                      {selectedForm.client_signature && (
-                        <img src={selectedForm.client_signature} alt="Client Signature" className="max-h-16 mx-auto mb-2" />
-                      )}
-                      <div className="border-b border-gray-300 mb-1"></div>
-                      <div className="text-sm">Signature & Date</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="border-b border-gray-400 pb-2 mb-2">
-                        <strong>DOCUMENT RECEIVED BY</strong>
-                      </div>
-                      {selectedForm.contractor_signature && (
-                        <img src={selectedForm.contractor_signature} alt="Contractor Signature" className="max-h-16 mx-auto mb-2" />
-                      )}
-                      <div className="border-b border-gray-300 mb-1"></div>
-                      <div className="text-sm">Signature & Date</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        
-        case 'site_handover_inspection':
-          return (
-            <div className="space-y-6" ref={formRef}>
-              <div className="border border-gray-300 p-4 bg-white">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-700 font-bold">LOGO</span>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold">Gubalafto Consulting Architects & Engineers P.L.C</h2>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm">Document No: GCAE/COF/003</div>
-                    <div className="text-sm">Issue No: 1</div>
-                    <div className="text-sm">Page: 1 of 2</div>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-100 p-2 text-center">
-                  <h3 className="font-bold">Site Handover Inspection Certificate</h3>
-                </div>
-                
-                <div className="mt-4 space-y-2">
-                  <div><strong>PROJECT:</strong> {selectedForm.project_name}</div>
-                  <div><strong>SITE LOCATION:</strong> {selectedForm.site_location}</div>
-                  <div><strong>CLIENT:</strong> {selectedForm.client_name}</div>
-                  <div><strong>CONTRACTOR:</strong> {selectedForm.contractor_name}</div>
-                </div>
-                
-                <div className="mt-6 space-y-4">
-                  <div>
-                    <h4 className="font-bold">1. Site</h4>
-                    <ul className="ml-6 space-y-1">
-                      <li>• Surface soil ________________________________</li>
-                      <li>• Surface water ________________________________</li>
-                      <li>• Surface slope ________________________________</li>
-                      <li>• Adjacent construction ________________________________</li>
-                      <li>• Accessibility ________________________________</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold">2. Obstructions</h4>
-                    <ul className="ml-6 space-y-1">
-                      <li>• Trees and bushes ________________________________</li>
-                      <li>• Water supply lines ________________________________</li>
-                      <li>• Sewer/drainage lines ________________________________</li>
-                      <li>• Telephone line ________________________________</li>
-                      <li>• Road/railway line ________________________________</li>
-                      <li>• Over ground structure ________________________________</li>
-                      <li>• Underground structure ________________________________</li>
-                      <li>• Others ________________________________</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold">3. Reference</h4>
-                    <ul className="ml-6 space-y-1">
-                      <li>• Bench mark ________________________________</li>
-                      <li>• Corner stone ________________________________</li>
-                      <li>• Border lines ________________________________</li>
-                      <li>• Water supply connection points ________________________________</li>
-                      <li>• Electric connection points ________________________________</li>
-                      <li>• Sewer drainage connection points ________________________________</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-bold">4. Additional items/comments:</h4>
-                    <div className="border border-gray-300 p-2 min-h-[80px]"></div>
-                  </div>
-                </div>
-                
-                <div className="mt-8 grid grid-cols-2 gap-8">
-                  <div className="text-center">
-                    <div className="border-b border-gray-400 pb-2 mb-2">
-                      <strong>Supervisor</strong>
-                    </div>
-                    {selectedForm.client_signature && (
-                      <img src={selectedForm.client_signature} alt="Supervisor Signature" className="max-h-16 mx-auto mb-2" />
-                    )}
-                    <div className="border-b border-gray-300 mb-1">Name</div>
-                    <div className="border-b border-gray-300 mb-1">Signature</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="border-b border-gray-400 pb-2 mb-2">
-                      <strong>Contractors</strong>
-                    </div>
-                    {selectedForm.contractor_signature && (
-                      <img src={selectedForm.contractor_signature} alt="Contractor Signature" className="max-h-16 mx-auto mb-2" />
-                    )}
-                    <div className="border-b border-gray-300 mb-1">Name</div>
-                    <div className="border-b border-gray-300 mb-1">Signature</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        
         case 'site_handover':
           return (
             <div className="space-y-6" ref={formRef}>
-              <div className="border border-gray-300 p-4 bg-white">
-                <div className="flex justify-between items-start mb-4">
+              {/* Professional Header */}
+              <div className="bg-white border-2 border-gray-800">
+                {/* Top Header Bar */}
+                <div className="bg-green-600 text-white px-4 py-2 flex justify-between items-center">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-700 font-bold">LOGO</span>
+                    <div className="bg-white p-1 rounded">
+                      <span className="text-green-600 font-bold text-sm">MIG</span>
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold">Gubalafto Consulting Architects & Engineers P.L.C</h2>
+                      <div className="font-bold text-sm">Company Name:</div>
+                      <div className="text-sm">Midroc Consulting Architects & Engineers P.L.C</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm">Document No: GCAE/COF/002</div>
-                    <div className="text-sm">Issue No: 1</div>
-                    <div className="text-sm">Page: 1 of 2</div>
+                    <div className="text-sm">Document No.</div>
+                    <div className="font-bold">GCAE/COF/002</div>
                   </div>
                 </div>
-                
-                <div className="bg-gray-100 p-2 text-center">
-                  <h3 className="font-bold">Site Handover Form</h3>
-                  <div className="text-sm">(HANDOVER OF THE WORK SITE FOR CONSTRUCTION)</div>
-                </div>
-                
-                <div className="mt-4 space-y-3">
-                  <div><strong>PROJECT:</strong> {selectedForm.project_name}</div>
-                  <div><strong>SITE LOCATION:</strong> {selectedForm.site_location}</div>
-                  <div><strong>CLIENT:</strong> {selectedForm.client_name}</div>
-                  <div><strong>CONTRACTOR:</strong> {selectedForm.contractor_name}</div>
-                  <div><strong>DATE:</strong> {selectedForm.effective_date}</div>
-                </div>
-                
-                <div className="mt-6">
-                  <p>The site for the construction of ________________________________ has been officially handed over to the contractor ________________________________ by the client ________________________________ on this _____ day of ________________. In the presence of the CONSULTANT.</p>
-                </div>
-                
-                <div className="mt-4">
-                  <p>The contractor hereby acknowledges the taking over of the work with all its explanation clearly defined in the specification and drawings. The contractor also acknowledges that the commencement date of the work shall be the _____ day of ________________.</p>
-                </div>
-                
-                <div className="mt-6">
-                  <p><strong>IN WITNESS THEREOF THIS DOCUMENT HAS BEEN SIGNED BY ALL PRESENT IN FOUR COPIES ONE OF WHICH FOR THE CLIENT, ONE FOR THE CONTRACTOR, TWO FOR THE CONSULTANT.</strong></p>
-                </div>
-                
-                <div className="mt-8 grid grid-cols-2 gap-8">
-                  <div className="text-center">
-                    <div className="border-b border-gray-400 pb-2 mb-4">
-                      <strong>FOR THE CLIENT</strong>
+
+                {/* Form Title Header */}
+                <div className="bg-gray-100 px-4 py-2 border-b border-gray-800">
+                  <div className="flex justify-between items-center">
+                    <div className="font-bold text-lg">Site Handover Form</div>
+                    <div className="text-right text-sm">
+                      <div>Effective Date: {selectedForm.effective_date}</div>
+                      <div className="grid grid-cols-2 gap-4 mt-1">
+                        <div>Issue No: 1</div>
+                        <div>Page: 1 of 2</div>
+                      </div>
                     </div>
-                    {selectedForm.client_signature && (
-                      <img src={selectedForm.client_signature} alt="Client Signature" className="max-h-16 mx-auto mb-2" />
-                    )}
-                    <div className="border-b border-gray-300 mb-1"></div>
                   </div>
-                  <div className="text-center">
-                    <div className="border-b border-gray-400 pb-2 mb-4">
-                      <strong>FOR THE CONTRACTOR</strong>
-                    </div>
-                    {selectedForm.contractor_signature && (
-                      <img src={selectedForm.contractor_signature} alt="Contractor Signature" className="max-h-16 mx-auto mb-2" />
-                    )}
-                    <div className="border-b border-gray-300 mb-1"></div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    (HANDOVER OF THE WORK SITE FOR THE CONSTRUCTION)
                   </div>
                 </div>
-                
-                <div className="mt-8">
-                  <div className="text-center border-b border-gray-400 pb-2 mb-4">
-                    <strong>WITNESSES</strong>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>Name</div>
-                    <div>Representing</div>
-                    <div>Signature</div>
-                  </div>
-                  <div className="space-y-2 mt-2">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="border-b border-gray-300">1 ________________</div>
-                      <div className="border-b border-gray-300">________________</div>
-                      <div className="border-b border-gray-300">________________</div>
+
+                {/* Form Content */}
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div><strong>PROJECT:</strong> {selectedForm.project_name}</div>
+                      <div><strong>SITE LOCATION:</strong> {selectedForm.site_location}</div>
+                      <div><strong>CLIENT:</strong> {selectedForm.client_name}</div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="border-b border-gray-300">2 ________________</div>
-                      <div className="border-b border-gray-300">________________</div>
-                      <div className="border-b border-gray-300">________________</div>
+                    <div className="space-y-2">
+                      <div><strong>CONTRACTOR:</strong> {selectedForm.contractor_name}</div>
+                      <div><strong>CONSULTANT:</strong> Midroc Consulting Architects & Engineers P.L.C</div>
+                      <div><strong>DATE:</strong> {selectedForm.effective_date}</div>
                     </div>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <p>The site for the construction of <u>{selectedForm.project_name}</u> has been officially handed over to the contractor <u>{selectedForm.contractor_name}</u> by the client <u>{selectedForm.client_name}</u> on this <u>{new Date().getDate()}</u> day of <u>{new Date().toLocaleDateString('en-US', { month: 'long' })}</u>. In the presence of the CONSULTANT.</p>
+                    
+                    <p>The contractor hereby acknowledges the taking over of the work with all its explanation clearly defined in the specification and drawings. The contractor also acknowledges that the commencement date of the work shall be the <u>{new Date(selectedForm.effective_date).getDate()}</u> day of <u>{new Date(selectedForm.effective_date).toLocaleDateString('en-US', { month: 'long' })}</u>.</p>
+                    
+                    <p className="font-bold">IN WITNESS THEREOF THIS DOCUMENT HAS BEEN SIGNED BY ALL PRESENT IN FOUR COPIES ONE OF WHICH FOR THE CLIENT, ONE FOR THE CONTRACTOR, TWO FOR THE CONSULTANT.</p>
+                  </div>
+
+                  {/* Signature Section */}
+                  <div className="mt-8 grid grid-cols-2 gap-8">
+                    <div className="text-center border border-gray-400 p-4">
+                      <div className="font-bold border-b border-gray-400 pb-2 mb-4">FOR THE CLIENT</div>
+                      {selectedForm.client_signature && (
+                        <img src={selectedForm.client_signature} alt="Client Signature" className="max-h-16 mx-auto mb-2" />
+                      )}
+                      <div className="border-b border-gray-300 mb-2 min-h-[2rem]"></div>
+                    </div>
+                    <div className="text-center border border-gray-400 p-4">
+                      <div className="font-bold border-b border-gray-400 pb-2 mb-4">FOR THE CONTRACTOR</div>
+                      {selectedForm.contractor_signature && (
+                        <img src={selectedForm.contractor_signature} alt="Contractor Signature" className="max-h-16 mx-auto mb-2" />
+                      )}
+                      <div className="border-b border-gray-300 mb-2 min-h-[2rem]"></div>
+                    </div>
+                  </div>
+
+                  {/* Witnesses Section */}
+                  <div className="mt-8">
+                    <div className="text-center font-bold border-b border-gray-400 pb-2 mb-4">WITNESSES</div>
+                    <div className="border border-gray-400">
+                      <div className="grid grid-cols-3 gap-0 bg-gray-100 font-bold text-center">
+                        <div className="border-r border-gray-400 p-2">Name</div>
+                        <div className="border-r border-gray-400 p-2">Representing</div>
+                        <div className="p-2">Signature</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-0">
+                        <div className="border-r border-gray-400 p-2 h-12">1 ________________</div>
+                        <div className="border-r border-gray-400 p-2 h-12">________________</div>
+                        <div className="p-2 h-12">________________</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-0 border-t border-gray-400">
+                        <div className="border-r border-gray-400 p-2 h-12">2 ________________</div>
+                        <div className="border-r border-gray-400 p-2 h-12">________________</div>
+                        <div className="p-2 h-12">________________</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="flex justify-center gap-4 mt-8 pt-4 border-t border-gray-400">
+                    <button className="px-6 py-2 bg-gray-500 text-white rounded">Cancel</button>
+                    <button className="px-6 py-2 bg-blue-600 text-white rounded">Submit Contract</button>
                   </div>
                 </div>
               </div>
@@ -776,7 +733,8 @@ const ContractualManagementModule: React.FC = () => {
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   selectedForm.status === 'fully_signed' ? 'bg-green-100 text-green-800' :
                   selectedForm.status === 'client_signed' ? 'bg-blue-100 text-blue-800' :
-                  selectedForm.status === 'pending_signatures' ? 'bg-yellow-100 text-yellow-800' :
+                  selectedForm.status === 'assigned' ? 'bg-yellow-100 text-yellow-800' :
+                  selectedForm.status === 'pending_signatures' ? 'bg-orange-100 text-orange-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {selectedForm.status.replace('_', ' ').charAt(0).toUpperCase() + selectedForm.status.replace('_', ' ').slice(1)}
@@ -790,16 +748,44 @@ const ContractualManagementModule: React.FC = () => {
               </div>
             </div>
 
+            {/* Assignment Info */}
+            {selectedForm.status !== 'draft' && (
+              <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800 mb-2">Assignment Details</h4>
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+                  <div>
+                    <strong>Client Assigned to:</strong> {selectedForm.client_user_name || 'Not assigned'}
+                  </div>
+                  <div>
+                    <strong>Contractor Assigned to:</strong> {selectedForm.contractor_user_name || 'Not assigned'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Form Content */}
             <div className="mb-6">
               {renderFormContent()}
             </div>
 
-            {/* Signature Actions */}
+            {/* Actions */}
             <div className="border-t pt-6">
               <div className="flex justify-between items-center">
+                {/* Assignment and Signing Actions */}
                 <div className="flex gap-2">
-                  {!selectedForm.client_signature && (
+                  {isAuthorized && selectedForm.status === 'draft' && (
+                    <button
+                      onClick={() => {
+                        setShowAssignModal(true);
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Assign for Signing
+                    </button>
+                  )}
+                  
+                  {selectedForm.status !== 'draft' && !selectedForm.client_signature && canSignAsClient && (
                     <button
                       onClick={() => {
                         setSigningAs('client');
@@ -811,7 +797,8 @@ const ContractualManagementModule: React.FC = () => {
                       Sign as Client
                     </button>
                   )}
-                  {!selectedForm.contractor_signature && (
+                  
+                  {selectedForm.status !== 'draft' && !selectedForm.contractor_signature && canSignAsContractor && (
                     <button
                       onClick={() => {
                         setSigningAs('contractor');
@@ -825,6 +812,7 @@ const ContractualManagementModule: React.FC = () => {
                   )}
                 </div>
                 
+                {/* Export and Close Actions */}
                 <div className="flex gap-2">
                   {isAuthorized && selectedForm.status === 'fully_signed' && (
                     <button
@@ -854,10 +842,21 @@ const ContractualManagementModule: React.FC = () => {
     switch (status) {
       case 'fully_signed': return 'bg-green-100 text-green-800';
       case 'client_signed': return 'bg-blue-100 text-blue-800';
-      case 'pending_signatures': return 'bg-yellow-100 text-yellow-800';
+      case 'assigned': return 'bg-yellow-100 text-yellow-800';
+      case 'pending_signatures': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Filter forms based on user role
+  const filteredForms = contractForms.filter(form => {
+    if (isAuthorized) {
+      return true; // Admin/GM can see all forms
+    }
+    
+    // Regular users can only see forms assigned to them
+    return form.client_assigned_to === user?.id || form.contractor_assigned_to === user?.id;
+  });
 
   if (loading) {
     return (
@@ -874,8 +873,8 @@ const ContractualManagementModule: React.FC = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Contractual Management</h2>
-          <p className="text-gray-600">Manage contracts and form templates</p>
+          <h2 className="text-2xl font-bold text-gray-900">Contract Forms</h2>
+          <p className="text-gray-600">Manage contract forms and digital signatures</p>
         </div>
         {isAuthorized && (
           <div className="flex gap-2">
@@ -886,77 +885,73 @@ const ContractualManagementModule: React.FC = () => {
               <Plus className="w-4 h-4" />
               New Form
             </button>
-            <button
-              onClick={() => setShowNewContractModal(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Contract
-            </button>
           </div>
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('contracts')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'contracts'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Contracts
-          </button>
-          <button
-            onClick={() => setActiveTab('forms')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'forms'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Contract Forms
-          </button>
-        </nav>
-      </div>
-
-      {/* Contract Forms Tab */}
-      {activeTab === 'forms' && (
-        <div className="space-y-4">
-          {contractForms.map((form) => (
-            <div key={form.id} className="bg-white rounded-lg shadow-sm border p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{form.title}</h3>
-                  <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">Client:</span>
-                      <span className="font-medium">{form.client_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">Contractor:</span>
-                      <span className="font-medium">{form.contractor_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">Date:</span>
-                      <span className="font-medium">{new Date(form.effective_date).toLocaleDateString()}</span>
-                    </div>
+      {/* Contract Forms List */}
+      <div className="space-y-4">
+        {filteredForms.map((form) => (
+          <div key={form.id} className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{form.title}</h3>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">Client:</span>
+                    <span className="font-medium">{form.client_name}</span>
                   </div>
-                  <div className="mt-2 text-sm text-gray-600">
-                    Project: {form.project_name} | Location: {form.site_location}
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">Contractor:</span>
+                    <span className="font-medium">{form.contractor_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">Date:</span>
+                    <span className="font-medium">{new Date(form.effective_date).toLocaleDateString()}</span>
                   </div>
                 </div>
+                <div className="mt-2 text-sm text-gray-600">
+                  Project: {form.project_name} | Location: {form.site_location}
+                </div>
                 
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(form.status)}`}>
-                    {form.status.replace('_', ' ').charAt(0).toUpperCase() + form.status.replace('_', ' ').slice(1)}
-                  </span>
+                {/* Assignment Info */}
+                {form.status !== 'draft' && (
+                  <div className="mt-3 text-sm">
+                    <div className="flex gap-4">
+                      <span className="text-gray-600">
+                        Client Assigned: <span className="font-medium text-blue-600">{form.client_user_name || 'Not assigned'}</span>
+                      </span>
+                      <span className="text-gray-600">
+                        Contractor Assigned: <span className="font-medium text-green-600">{form.contractor_user_name || 'Not assigned'}</span>
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(form.status)}`}>
+                  {form.status.replace('_', ' ').charAt(0).toUpperCase() + form.status.replace('_', ' ').slice(1)}
+                </span>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-1">
+                  {isAuthorized && form.status === 'draft' && (
+                    <button
+                      onClick={() => {
+                        setSelectedForm(form);
+                        setShowAssignModal(true);
+                      }}
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                      title="Assign for Signing"
+                    >
+                      Assign
+                    </button>
+                  )}
+                  
                   <button
                     onClick={() => {
                       setSelectedForm(form);
@@ -970,21 +965,15 @@ const ContractualManagementModule: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Existing contracts content for contracts tab */}
-      {activeTab === 'contracts' && (
-        <div className="text-center py-12 text-gray-500">
-          Standard contracts will be displayed here
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
       {/* Modals */}
       {showNewFormModal && <CreateFormModal />}
       {showFormDetailsModal && <FormDetailsModal />}
       {showSigningModal && <SigningModal />}
+      {showAssignModal && <AssignModal />}
     </div>
   );
 };
