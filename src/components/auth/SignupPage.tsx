@@ -4,9 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 
 interface SignupPageProps {
   onLoginClick: () => void;
+  onSignupSuccess?: (email: string) => void;
 }
 
-export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
+export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +16,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
     role: 'employee'
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { signup, loading } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -27,7 +29,8 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+    setSuccess('');
+
     if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -43,9 +46,26 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
       return;
     }
 
-    const success = await signup(formData.name, formData.email, formData.password, formData.role);
-    if (!success) {
-      setError('Registration failed. Please try again.');
+    const result = await signup(formData.name, formData.email, formData.password, formData.role);
+    if (result.success) {
+      setSuccess(result.message || 'Account created successfully!');
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'employee'
+      });
+
+      // Trigger success callback after a short delay to show success message
+      setTimeout(() => {
+        if (onSignupSuccess) {
+          onSignupSuccess(formData.email);
+        }
+      }, 2000);
+    } else {
+      setError(result.message || 'Registration failed. Please try again.');
     }
   };
 
@@ -62,10 +82,14 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-xl mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-32 h-20 bg-white rounded-xl mb-4 shadow-lg p-2">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa277c4669d86451fa82a2c1c19c543ba%2F7073ebd30eee4e56929e82612bb1ae92?format=webp&width=800"
+              alt="Midroc Investment Group"
+              className="h-full w-auto object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Join Midroc ERP</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Join MIDROC ERP</h1>
           <p className="text-green-100">Create your account to get started</p>
         </div>
 
@@ -116,13 +140,14 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-700 focus:border-transparent transition-all"
               >
-                <option value="admin">Administrator</option>
-                <option value="general_manager">General Manager</option>
                 <option value="project_manager">Project Manager</option>
                 <option value="engineer">Engineer</option>
                 <option value="consultant">Consultant</option>
                 <option value="employee">Employee</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Admin and General Manager accounts are created by existing administrators.
+              </p>
             </div>
 
             <div>
@@ -163,6 +188,15 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick }) => {
               <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
                 <AlertCircle className="w-4 h-4" />
                 {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                {success}
               </div>
             )}
 

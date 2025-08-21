@@ -1,15 +1,18 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  Users, 
-  DollarSign, 
-  BarChart3, 
-  Shield, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Users,
+  DollarSign,
+  BarChart3,
+  Shield,
   UserCheck,
   LogOut,
   Building2,
-  HardHat
+  HardHat,
+  Eye,
+  Briefcase,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -21,6 +24,10 @@ interface NavigationProps {
 const modules = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
   { id: 'projects', name: 'Construction Projects', icon: HardHat },
+  { id: 'supervision', name: 'Supervision', icon: Eye },
+  { id: 'consulting', name: 'Consulting', icon: Briefcase },
+  { id: 'contracts', name: 'Contract Management', icon: FileText },
+  { id: 'users', name: 'User Management', icon: Users },
   { id: 'hr', name: 'Human Resources', icon: Users },
   { id: 'finance', name: 'Finance', icon: DollarSign },
   { id: 'bi', name: 'Business Intelligence', icon: BarChart3 },
@@ -29,18 +36,22 @@ const modules = [
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleChange }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, canAccessModule } = useAuth();
 
   return (
     <div className="bg-white shadow-lg h-screen w-64 fixed left-0 top-0 flex flex-col border-r border-gray-200">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-700 to-green-800 rounded-lg flex items-center justify-center shadow-md">
-            <Building2 className="w-6 h-6 text-white" />
+          <div className="w-16 h-12 bg-white rounded-lg flex items-center justify-center shadow-md p-1 border">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa277c4669d86451fa82a2c1c19c543ba%2F7073ebd30eee4e56929e82612bb1ae92?format=webp&width=800"
+              alt="Midroc Investment Group"
+              className="h-full w-auto object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Midroc ERP</h1>
+            <h1 className="text-xl font-bold text-gray-900">MIDROC ERP</h1>
             <p className="text-sm text-gray-600">Construction & Consulting</p>
           </div>
         </div>
@@ -96,7 +107,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
       {/* Navigation Menu */}
       <nav className="flex-1 py-4">
         <div className="space-y-1">
-          {modules.map((module) => {
+          {modules.filter(module => canAccessModule(module.id)).map((module) => {
             const Icon = module.icon;
             const isActive = currentModule === module.id;
 
@@ -116,6 +127,18 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
             );
           })}
         </div>
+
+        {/* Role-based access notice */}
+        {user?.role === 'employee' && (
+          <div className="px-6 mt-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-700 font-medium">Employee Access</p>
+              <p className="text-xs text-blue-600 mt-1">
+                Limited module access based on your role. Contact admin for additional permissions.
+              </p>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Logout */}

@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { 
-  HardHat, 
-  Plus, 
-  Edit, 
-  Eye, 
-  Settings, 
+import {
+  HardHat,
+  Plus,
+  Edit,
+  Eye,
+  Settings,
   Download,
   Search,
   Filter,
   Trash2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  FileImage,
+  FileText
 } from 'lucide-react';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } from 'docx';
+import { saveAs } from 'file-saver';
 import { Project } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { NewProjectModal } from './NewProjectModal';
@@ -32,6 +37,8 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<Project | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,80 +96,249 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleExportProject = (project: Project) => {
-    // Create comprehensive project data for export
-    const exportData = {
-      projectName: project.name,
-      projectId: project.id,
-      status: project.status,
-      priority: project.priority,
-      progress: project.progress,
-      budget: project.budget,
-      timeline: `${project.startDate} to ${project.endDate}`,
-      manager: project.manager.name,
-      managerEmail: project.manager.email,
-      team: project.team.map(member => member.name),
-      teamDetails: project.team.map(member => ({
-        name: member.name,
-        email: member.email,
-        role: member.role,
-        department: member.department
-      })),
-      description: project.description,
-      exportDate: new Date().toISOString()
-    };
-    
-    // Create PDF-like formatted text content
-    const pdfContent = `
-MIDROC ERP - PROJECT EXPORT REPORT
-=====================================
+  const handleExportProject = async (project: Project) => {
+    try {
+      // Create DOCX document
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              text: "MIDROC ERP - PROJECT EXPORT REPORT",
+              heading: HeadingLevel.TITLE,
+            }),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Project Information",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Project Name: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.name,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Project ID: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.id,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Status: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.status.toUpperCase(),
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Priority: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.priority.toUpperCase(),
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Progress: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: `${project.progress}%`,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Budget: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: formatCurrency(project.budget),
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Timeline: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: `${project.startDate} to ${project.endDate}`,
+                }),
+              ],
+            }),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Project Manager",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Name: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.manager.name,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Email: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: project.manager.email,
+                }),
+              ],
+            }),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Construction Team (${project.team.length} members)`,
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+            }),
+            ...project.team.map(member =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${member.name} (${member.role}) - ${member.department} - ${member.email}`,
+                  }),
+                ],
+              })
+            ),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Project Description",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+            }),
+            new Paragraph({
+              text: project.description || 'No description provided',
+            }),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Export Information",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Export Date: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: new Date().toLocaleString(),
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Generated by: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: "Midroc ERP System",
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Format: ",
+                  bold: true,
+                }),
+                new TextRun({
+                  text: "Construction Project Report (DOCX)",
+                }),
+              ],
+            }),
+            new Paragraph({
+              text: "",
+            }),
+            new Paragraph({
+              text: `© ${new Date().getFullYear()} Midroc Construction & Consulting`,
+              alignment: "center",
+            }),
+          ],
+        }],
+      });
 
-Project Name: ${exportData.projectName}
-Project ID: ${exportData.projectId}
-Status: ${exportData.status.toUpperCase()}
-Priority: ${exportData.priority.toUpperCase()}
-Progress: ${exportData.progress}%
-Budget: $${exportData.budget.toLocaleString()}
-Timeline: ${exportData.timeline}
+      // Generate and save the document
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `${project.name.replace(/\s+/g, '_')}_Project_Report.docx`);
 
-PROJECT MANAGER
----------------
-Name: ${exportData.manager}
-Email: ${exportData.managerEmail}
-
-CONSTRUCTION TEAM (${exportData.teamDetails.length} members)
-------------------
-${exportData.teamDetails.map(member => 
-  `• ${member.name} (${member.role}) - ${member.department} - ${member.email}`
-).join('\n')}
-
-PROJECT DESCRIPTION
--------------------
-${exportData.description || 'No description provided'}
-
-EXPORT INFORMATION
-------------------
-Export Date: ${new Date(exportData.exportDate).toLocaleString()}
-Generated by: Midroc ERP System
-Format: Construction Project Report
-
-=====================================
-© ${new Date().getFullYear()} Midroc Construction & Consulting
-    `;
-    
-    const dataBlob = new Blob([pdfContent], {type: 'text/plain'});
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${project.name.replace(/\s+/g, '_')}_Project_Report.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    setNotification({
-      type: 'success',
-      message: `Project "${project.name}" exported as detailed report!`
-    });
-    setTimeout(() => setNotification(null), 3000);
+      setNotification({
+        type: 'success',
+        message: `Project "${project.name}" exported as DOCX document!`
+      });
+      setTimeout(() => setNotification(null), 3000);
+    } catch (error) {
+      console.error('Error exporting project:', error);
+      setNotification({
+        type: 'error',
+        message: 'Failed to export project. Please try again.'
+      });
+      setTimeout(() => setNotification(null), 3000);
+    }
   };
 
   const handleDeleteProject = (project: Project) => {
@@ -175,6 +351,200 @@ Format: Construction Project Report
       setTimeout(() => setNotification(null), 3000);
     }
   };
+
+  const handleUploadDesign = (project: Project) => {
+    if (user?.role === 'admin' || user?.role === 'general_manager') {
+      setSelectedProjectForUpload(project);
+      setShowUploadModal(true);
+    } else {
+      setNotification({
+        type: 'error',
+        message: 'Only General Managers and Admins can upload design files.'
+      });
+      setTimeout(() => setNotification(null), 3000);
+    }
+  };
+
+  const UploadDesignModal = () => {
+    const [dragActive, setDragActive] = useState(false);
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+    const handleDrag = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.type === "dragenter" || e.type === "dragover") {
+        setDragActive(true);
+      } else if (e.type === "dragleave") {
+        setDragActive(false);
+      }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+
+      const files = Array.from(e.dataTransfer.files).filter(file =>
+        file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'application/pdf'
+      );
+
+      if (files.length > 0) {
+        setUploadedFiles(prev => [...prev, ...files]);
+      } else {
+        setNotification({
+          type: 'error',
+          message: 'Please upload only JPG or PDF files.'
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []).filter(file =>
+        file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'application/pdf'
+      );
+
+      if (files.length > 0) {
+        setUploadedFiles(prev => [...prev, ...files]);
+      }
+    };
+
+    const removeFile = (index: number) => {
+      setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleUpload = async () => {
+      if (uploadedFiles.length === 0) {
+        setNotification({
+          type: 'error',
+          message: 'Please select files to upload.'
+        });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+      }
+
+      try {
+        // Here you would upload to Supabase storage
+        // For now, we'll simulate the upload
+        console.log('Uploading files for project:', selectedProjectForUpload?.name);
+        console.log('Files:', uploadedFiles);
+
+        // Simulate upload delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        setNotification({
+          type: 'success',
+          message: `${uploadedFiles.length} design file(s) uploaded successfully to project "${selectedProjectForUpload?.name}"`
+        });
+
+        setShowUploadModal(false);
+        setSelectedProjectForUpload(null);
+        setUploadedFiles([]);
+        setTimeout(() => setNotification(null), 3000);
+      } catch (error) {
+        console.error('Upload error:', error);
+        setNotification({
+          type: 'error',
+          message: 'Failed to upload files. Please try again.'
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-2xl">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            Upload Design Files - {selectedProjectForUpload?.name}
+          </h3>
+
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-lg font-medium text-gray-900 mb-2">
+              Drop design files here or click to browse
+            </p>
+            <p className="text-sm text-gray-600 mb-4">
+              Support for JPG and PDF formats only
+            </p>
+            <input
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.pdf"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="file-upload"
+            />
+            <label
+              htmlFor="file-upload"
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 cursor-pointer inline-block"
+            >
+              Browse Files
+            </label>
+          </div>
+
+          {uploadedFiles.length > 0 && (
+            <div className="mt-6">
+              <h4 className="font-medium text-gray-900 mb-3">Selected Files:</h4>
+              <div className="space-y-2">
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {file.type === 'application/pdf' ? (
+                        <FileText className="w-6 h-6 text-red-600" />
+                      ) : (
+                        <FileImage className="w-6 h-6 text-blue-600" />
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900">{file.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-6">
+            <button
+              onClick={() => {
+                setShowUploadModal(false);
+                setSelectedProjectForUpload(null);
+                setUploadedFiles([]);
+              }}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={uploadedFiles.length === 0}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Upload Files
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
@@ -375,11 +745,20 @@ Format: Construction Project Report
                           <Settings className="w-4 h-4" />
                         </button>
                       )}
+                      {(user?.role === 'admin' || user?.role === 'general_manager') && (
+                        <button
+                          onClick={() => handleUploadDesign(project)}
+                          className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Upload Design"
+                        >
+                          <Upload className="w-4 h-4" />
+                        </button>
+                      )}
                       {(user?.role === 'admin' || user?.role === 'general_manager' || user?.role === 'project_manager') && (
-                        <button 
+                        <button
                           onClick={() => handleExportProject(project)}
-                          className="p-1 text-gray-400 hover:text-orange-600 transition-colors" 
-                          title="Export Data"
+                          className="p-1 text-gray-400 hover:text-orange-600 transition-colors"
+                          title="Export DOCX"
                         >
                           <Download className="w-4 h-4" />
                         </button>
@@ -447,6 +826,8 @@ Format: Construction Project Report
           }}
         />
       )}
+
+      {showUploadModal && <UploadDesignModal />}
     </div>
   );
 };

@@ -1,16 +1,113 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 
+interface PendingUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, role: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  signup: (name: string, email: string, password: string, role: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
+  hasPermission: (permission: string) => boolean;
+  hasRole: (roles: string[]) => boolean;
+  canAccessModule: (module: string) => boolean;
+  getPendingUsers: () => PendingUser[];
+  approveUser: (userId: string) => Promise<boolean>;
+  rejectUser: (userId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Role-based permissions configuration
+const ROLE_PERMISSIONS = {
+  admin: [
+    'view_all_modules',
+    'create_projects',
+    'edit_projects',
+    'delete_projects',
+    'manage_users',
+    'upload_designs',
+    'export_data',
+    'approve_contracts',
+    'manage_supervision',
+    'manage_consulting',
+    'manage_finances',
+    'view_analytics',
+    'manage_hr',
+    'quality_audit',
+    'manage_crm',
+    'approve_users'
+  ],
+  general_manager: [
+    'view_all_modules',
+    'create_projects',
+    'edit_projects',
+    'upload_designs',
+    'export_data',
+    'approve_contracts',
+    'manage_supervision',
+    'manage_consulting',
+    'manage_finances',
+    'view_analytics',
+    'manage_hr',
+    'quality_audit',
+    'manage_crm'
+  ],
+  project_manager: [
+    'view_projects',
+    'edit_assigned_projects',
+    'export_data',
+    'create_supervision_reports',
+    'view_consulting',
+    'view_finances',
+    'view_analytics_limited',
+    'view_hr_limited',
+    'quality_audit_limited'
+  ],
+  consultant: [
+    'view_consulting',
+    'manage_own_contracts',
+    'create_time_logs',
+    'view_projects_limited',
+    'export_own_data'
+  ],
+  engineer: [
+    'view_projects_limited',
+    'create_supervision_reports',
+    'view_consulting_limited',
+    'quality_audit_limited'
+  ],
+  employee: [
+    'view_dashboard',
+    'view_own_tasks',
+    'view_projects_limited'
+  ]
+};
+
+// Module access configuration
+const MODULE_ACCESS = {
+  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee'],
+  projects: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  consulting: ['admin', 'general_manager', 'consultant'],
+  contracts: ['admin', 'general_manager'],
+  users: ['admin'],
+  hr: ['admin', 'general_manager'],
+  finance: ['admin', 'general_manager'],
+  bi: ['admin', 'general_manager', 'project_manager'],
+  qa: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  crm: ['admin', 'general_manager', 'consultant']
+};
 
 // Mock users for demo
 const mockUsers: User[] = [
@@ -48,6 +145,26 @@ const mockUsers: User[] = [
     email: 'engineer@midroc.com',
     role: 'engineer',
     department: 'Structural Engineering'
+  },
+  {
+    id: '6',
+    name: 'Lisa Johnson',
+    email: 'employee@midroc.com',
+    role: 'employee',
+    department: 'General Construction'
+  }
+];
+
+// Mock pending users storage
+let pendingUsers: PendingUser[] = [
+  {
+    id: 'pending_1',
+    name: 'Ahmed Mohammed',
+    email: 'ahmed@example.com',
+    role: 'engineer',
+    department: 'Structural Engineering',
+    created_at: '2024-01-16T00:00:00Z',
+    status: 'pending'
   }
 ];
 
@@ -64,7 +181,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
     
     // Simulate API call
@@ -75,37 +192,118 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(foundUser);
       localStorage.setItem('erp_user', JSON.stringify(foundUser));
       setLoading(false);
-      return true;
+      return { success: true };
     }
     
     setLoading(false);
-    return false;
+    return { success: false, message: 'Invalid email or password' };
   };
 
-  const signup = async (name: string, email: string, password: string, role: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string, role: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const newUser: User = {
-      id: Date.now().toString(),
+    // Check if user already exists
+    const existingUser = mockUsers.find(u => u.email === email);
+    const existingPending = pendingUsers.find(u => u.email === email);
+    
+    if (existingUser || existingPending) {
+      setLoading(false);
+      return { success: false, message: 'An account with this email already exists' };
+    }
+
+    // Prevent direct admin/general_manager signup
+    if (role === 'admin' || role === 'general_manager') {
+      setLoading(false);
+      return { success: false, message: 'Admin and General Manager accounts must be created by existing administrators' };
+    }
+    
+    // Add user to pending approval list instead of directly creating account
+    const newPendingUser: PendingUser = {
+      id: `pending_${Date.now()}`,
       name,
       email,
-      role: role as 'admin' | 'general_manager' | 'project_manager' | 'engineer' | 'consultant' | 'employee',
-      department: 'General'
+      role: role as 'project_manager' | 'engineer' | 'consultant' | 'employee',
+      department: 'General',
+      created_at: new Date().toISOString(),
+      status: 'pending'
     };
     
-    mockUsers.push(newUser);
-    setUser(newUser);
-    localStorage.setItem('erp_user', JSON.stringify(newUser));
+    pendingUsers.push(newPendingUser);
     setLoading(false);
-    return true;
+    return { 
+      success: true, 
+      message: 'Account created successfully! Your registration is pending admin approval. You will be notified once approved.' 
+    };
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('erp_user');
+  };
+
+  const hasPermission = (permission: string): boolean => {
+    if (!user) return false;
+    const userPermissions = ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS] || [];
+    return userPermissions.includes(permission);
+  };
+
+  const hasRole = (roles: string[]): boolean => {
+    if (!user) return false;
+    return roles.includes(user.role);
+  };
+
+  const canAccessModule = (module: string): boolean => {
+    if (!user) return false;
+    const allowedRoles = MODULE_ACCESS[module as keyof typeof MODULE_ACCESS] || [];
+    return allowedRoles.includes(user.role);
+  };
+
+  const getPendingUsers = (): PendingUser[] => {
+    return pendingUsers.filter(u => u.status === 'pending');
+  };
+
+  const approveUser = async (userId: string): Promise<boolean> => {
+    try {
+      const pendingUser = pendingUsers.find(u => u.id === userId);
+      if (!pendingUser) return false;
+
+      // Create approved user
+      const newUser: User = {
+        id: Date.now().toString(),
+        name: pendingUser.name,
+        email: pendingUser.email,
+        role: pendingUser.role as any,
+        department: pendingUser.department
+      };
+
+      // Add to approved users
+      mockUsers.push(newUser);
+      
+      // Update pending user status
+      pendingUsers = pendingUsers.map(u => 
+        u.id === userId ? { ...u, status: 'approved' as const } : u
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error approving user:', error);
+      return false;
+    }
+  };
+
+  const rejectUser = async (userId: string): Promise<boolean> => {
+    try {
+      pendingUsers = pendingUsers.map(u => 
+        u.id === userId ? { ...u, status: 'rejected' as const } : u
+      );
+      return true;
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      return false;
+    }
   };
 
   return (
@@ -116,7 +314,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signup,
         logout,
         isAuthenticated: !!user,
-        loading
+        loading,
+        hasPermission,
+        hasRole,
+        canAccessModule,
+        getPendingUsers,
+        approveUser,
+        rejectUser
       }}
     >
       {children}

@@ -15,15 +15,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    const success = await login(email, password);
-    if (!success) {
-      setError('Invalid email or password');
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.message || 'Login failed');
     }
   };
 
@@ -40,21 +40,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-xl mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-32 h-20 bg-white rounded-xl mb-4 shadow-lg p-2">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa277c4669d86451fa82a2c1c19c543ba%2F7073ebd30eee4e56929e82612bb1ae92?format=webp&width=800"
+              alt="Midroc Investment Group"
+              className="h-full w-auto object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Midroc ERP</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">MIDROC ERP</h1>
           <p className="text-green-100">Construction & Consulting Management</p>
         </div>
 
         {/* Demo Credentials */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-white mb-2">Demo Credentials:</h3>
+          <h3 className="font-semibold text-white mb-2">Demo Accounts (Password: password):</h3>
           <div className="text-sm text-green-100 space-y-1">
-            <p><span className="font-medium">Admin:</span> admin@midroc.com / password</p>
-            <p><span className="font-medium">General Manager:</span> gm@midroc.com / password</p>
-            <p><span className="font-medium">Project Manager:</span> pm@midroc.com / password</p>
-            <p><span className="font-medium">Consultant:</span> consultant@midroc.com / password</p>
+            <p><span className="font-medium">Admin:</span> admin@midroc.com (Full Access)</p>
+            <p><span className="font-medium">General Manager:</span> gm@midroc.com (Management Access)</p>
+            <p><span className="font-medium">Project Manager:</span> pm@midroc.com (Project Access)</p>
+            <p><span className="font-medium">Consultant:</span> consultant@midroc.com (Consulting Access)</p>
+            <p><span className="font-medium">Engineer:</span> engineer@midroc.com (Technical Access)</p>
+            <p><span className="font-medium">Employee:</span> employee@midroc.com (Limited Access)</p>
           </div>
         </div>
 

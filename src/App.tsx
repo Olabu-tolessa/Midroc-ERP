@@ -2,19 +2,26 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
+import { PendingApprovalPage } from './components/auth/PendingApprovalPage';
 import { Navigation } from './components/layout/Navigation';
-import { DashboardModule } from './components/modules/DashboardModule';
+import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
 import { HRModule } from './components/modules/HRModule';
 import { FinanceModule } from './components/modules/FinanceModule';
 import { BusinessIntelligenceModule } from './components/modules/BusinessIntelligenceModule';
 import { QualityAuditModule } from './components/modules/QualityAuditModule';
 import { CRMModule } from './components/modules/CRMModule';
+import SupervisionModule from './components/modules/SupervisionModule';
+import ConsultingModule from './components/modules/ConsultingModule';
+import ContractualManagementModule from './components/modules/ContractualManagementModule';
+import UserManagementModule from './components/modules/UserManagementModule';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [currentModule, setCurrentModule] = useState('dashboard');
+  const [pendingApprovalEmail, setPendingApprovalEmail] = useState<string | null>(null);
+  const [showPendingApproval, setShowPendingApproval] = useState(false);
 
   if (loading) {
     return (
@@ -28,12 +35,31 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
+    if (showPendingApproval && pendingApprovalEmail) {
+      return (
+        <PendingApprovalPage
+          userEmail={pendingApprovalEmail}
+          onBackToLogin={() => {
+            setShowPendingApproval(false);
+            setPendingApprovalEmail(null);
+            setAuthMode('login');
+          }}
+        />
+      );
+    }
+
     return (
       <>
         {authMode === 'login' ? (
           <LoginPage onSignupClick={() => setAuthMode('signup')} />
         ) : (
-          <SignupPage onLoginClick={() => setAuthMode('login')} />
+          <SignupPage
+            onLoginClick={() => setAuthMode('login')}
+            onSignupSuccess={(email) => {
+              setPendingApprovalEmail(email);
+              setShowPendingApproval(true);
+            }}
+          />
         )}
       </>
     );
@@ -45,6 +71,14 @@ const AppContent: React.FC = () => {
         return <DashboardModule />;
       case 'projects':
         return <ProjectManagementModule />;
+      case 'supervision':
+        return <SupervisionModule />;
+      case 'consulting':
+        return <ConsultingModule />;
+      case 'contracts':
+        return <ContractualManagementModule />;
+      case 'users':
+        return <UserManagementModule />;
       case 'hr':
         return <HRModule />;
       case 'finance':
