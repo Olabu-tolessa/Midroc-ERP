@@ -634,6 +634,7 @@ const UserManagementModule: React.FC = () => {
 
       {/* Modals */}
       {showDetailsModal && <UserDetailsModal />}
+      {showCreateUserModal && <CreateUserModal />}
     </div>
   );
 };
