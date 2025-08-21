@@ -8,7 +8,6 @@ import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
 import { HRModule } from './components/modules/HRModule';
 import { FinanceModule } from './components/modules/FinanceModule';
-import { BusinessIntelligenceModule } from './components/modules/BusinessIntelligenceModule';
 import { QualityAuditModule } from './components/modules/QualityAuditModule';
 import { CRMModule } from './components/modules/CRMModule';
 import SupervisionModule from './components/modules/SupervisionModule';
@@ -83,8 +82,6 @@ const AppContent: React.FC = () => {
         return <HRModule />;
       case 'finance':
         return <FinanceModule />;
-      case 'bi':
-        return <BusinessIntelligenceModule />;
       case 'qa':
         return <QualityAuditModule />;
       case 'crm':
