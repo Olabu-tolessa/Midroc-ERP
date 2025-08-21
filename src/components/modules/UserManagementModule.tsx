@@ -204,6 +204,7 @@ const UserManagementModule: React.FC = () => {
       case 'engineer': return 'bg-green-100 text-green-800';
       case 'consultant': return 'bg-purple-100 text-purple-800';
       case 'client': return 'bg-orange-100 text-orange-800';
+      case 'contractor': return 'bg-yellow-100 text-yellow-800';
       case 'employee': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
