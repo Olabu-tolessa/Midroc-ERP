@@ -602,17 +602,56 @@ const SupervisionModule: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Supervision Management</h2>
-          <p className="text-gray-600">Monitor project progress and team performance</p>
+          <p className="text-gray-600">Monitor project progress, quality assurance, and safety</p>
         </div>
         {isAuthorized && (
-          <button
-            onClick={() => setShowNewReportModal(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            New Report
-          </button>
+          <div className="flex gap-2">
+            {activeTab === 'supervision' && (
+              <button
+                onClick={() => setShowNewReportModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Report
+              </button>
+            )}
+            {activeTab === 'quality_safety' && (
+              <button
+                onClick={() => setShowNewQSModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New QS Inspection
+              </button>
+            )}
+          </div>
         )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          onClick={() => setActiveTab('supervision')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'supervision'
+              ? 'border-green-500 text-green-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          Supervision Reports ({filteredReports.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('quality_safety')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'quality_safety'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          Quality & Safety ({filteredQSReports.length})
+        </button>
       </div>
 
       {/* Filters */}
