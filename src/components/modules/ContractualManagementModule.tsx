@@ -60,7 +60,7 @@ const FORM_TEMPLATES = {
       site_location: '',
       client: '',
       contractor: '',
-      consultant: '',
+      consultant: 'Gobalaffo Consulting Architects & Engineers P.L.C',
       documents: {
         contract_documents_no: '',
         architectural_drawings_no: '',
@@ -70,7 +70,9 @@ const FORM_TEMPLATES = {
         mechanical_drawing_no: '',
         bill_of_quantities: '',
         other_no: ''
-      }
+      },
+      document_handed_over: '',
+      document_received_by: ''
     }
   },
   site_handover_inspection: {
