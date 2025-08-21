@@ -1,22 +1,29 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 
+interface PendingUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<{success: boolean, message?: string}>;
-  signup: (name: string, email: string, password: string, role: string) => Promise<{success: boolean, message?: string}>;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  signup: (name: string, email: string, password: string, role: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
   hasPermission: (permission: string) => boolean;
   hasRole: (roles: string[]) => boolean;
   canAccessModule: (module: string) => boolean;
-  pendingUsers: User[];
-  activeUsers: User[];
-  approveUser: (userId: string) => void;
-  rejectUser: (userId: string) => void;
-  createUser: (userData: {name: string, email: string, password: string, role: string, department: string}) => Promise<{success: boolean, message?: string}>;
-  refreshUsers: () => void;
+  getPendingUsers: () => PendingUser[];
+  approveUser: (userId: string) => Promise<boolean>;
+  rejectUser: (userId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +45,8 @@ const ROLE_PERMISSIONS = {
     'view_analytics',
     'manage_hr',
     'quality_audit',
-    'manage_crm'
+    'manage_crm',
+    'approve_users'
   ],
   general_manager: [
     'view_all_modules',
@@ -93,7 +101,6 @@ const MODULE_ACCESS = {
   supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
   consulting: ['admin', 'general_manager', 'consultant'],
   contracts: ['admin', 'general_manager'],
-  users: ['admin', 'general_manager'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
   bi: ['admin', 'general_manager', 'project_manager'],
@@ -101,121 +108,86 @@ const MODULE_ACCESS = {
   crm: ['admin', 'general_manager', 'consultant']
 };
 
-// Initialize with localStorage data or defaults
-const getInitialActiveUsers = (): User[] => {
-  const storedActiveUsers = localStorage.getItem('erp_active_users');
-  if (storedActiveUsers) {
-    return JSON.parse(storedActiveUsers);
+// Mock users for demo
+const mockUsers: User[] = [
+  {
+    id: '1',
+    name: 'John Anderson',
+    email: 'admin@midroc.com',
+    role: 'admin',
+    department: 'Administration'
+  },
+  {
+    id: '2',
+    name: 'Sarah Mitchell',
+    email: 'gm@midroc.com',
+    role: 'general_manager',
+    department: 'Construction Management'
+  },
+  {
+    id: '3',
+    name: 'Michael Rodriguez',
+    email: 'pm@midroc.com',
+    role: 'project_manager',
+    department: 'Highway Construction'
+  },
+  {
+    id: '4',
+    name: 'Emma Thompson',
+    email: 'consultant@midroc.com',
+    role: 'consultant',
+    department: 'Urban Planning'
+  },
+  {
+    id: '5',
+    name: 'David Chen',
+    email: 'engineer@midroc.com',
+    role: 'engineer',
+    department: 'Structural Engineering'
+  },
+  {
+    id: '6',
+    name: 'Lisa Johnson',
+    email: 'employee@midroc.com',
+    role: 'employee',
+    department: 'General Construction'
   }
-  
-  // Default active users
-  return [
-    {
-      id: '1',
-      name: 'John Anderson',
-      email: 'admin@midroc.com',
-      role: 'admin',
-      department: 'Administration',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '2',
-      name: 'Sarah Mitchell',
-      email: 'gm@midroc.com',
-      role: 'general_manager',
-      department: 'Construction Management',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '3',
-      name: 'Michael Rodriguez',
-      email: 'pm@midroc.com',
-      role: 'project_manager',
-      department: 'Highway Construction',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '4',
-      name: 'Emma Thompson',
-      email: 'consultant@midroc.com',
-      role: 'consultant',
-      department: 'Urban Planning',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '5',
-      name: 'David Chen',
-      email: 'engineer@midroc.com',
-      role: 'engineer',
-      department: 'Structural Engineering',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: '6',
-      name: 'Lisa Johnson',
-      email: 'employee@midroc.com',
-      role: 'employee',
-      department: 'General Construction',
-      approved: true,
-      created_at: '2024-01-01T00:00:00Z'
-    }
-  ];
-};
+];
 
-const getInitialPendingUsers = (): User[] => {
-  const storedPendingUsers = localStorage.getItem('erp_pending_users');
-  if (storedPendingUsers) {
-    return JSON.parse(storedPendingUsers);
+// Mock pending users storage
+let pendingUsers: PendingUser[] = [
+  {
+    id: 'pending_1',
+    name: 'Ahmed Mohammed',
+    email: 'ahmed@example.com',
+    role: 'engineer',
+    department: 'Structural Engineering',
+    created_at: '2024-01-16T00:00:00Z',
+    status: 'pending'
   }
-  return [];
-};
+];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeUsers, setActiveUsers] = useState<User[]>(getInitialActiveUsers());
-  const [pendingUsers, setPendingUsers] = useState<User[]>(getInitialPendingUsers());
 
   useEffect(() => {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('erp_user');
     if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('erp_user');
-      }
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
 
-  // Save users to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('erp_active_users', JSON.stringify(activeUsers));
-  }, [activeUsers]);
-
-  useEffect(() => {
-    localStorage.setItem('erp_pending_users', JSON.stringify(pendingUsers));
-  }, [pendingUsers]);
-
-  const login = async (email: string, password: string): Promise<{success: boolean, message?: string}> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const foundUser = activeUsers.find(u => u.email === email);
+    const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password === 'password') {
-      if (!foundUser.approved) {
-        setLoading(false);
-        return { success: false, message: 'Your account is pending approval. Please contact the administrator.' };
-      }
       setUser(foundUser);
       localStorage.setItem('erp_user', JSON.stringify(foundUser));
       setLoading(false);
@@ -226,41 +198,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: false, message: 'Invalid email or password' };
   };
 
-  const signup = async (name: string, email: string, password: string, role: string): Promise<{success: boolean, message?: string}> => {
+  const signup = async (name: string, email: string, password: string, role: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if user already exists in active or pending users
-    const existingActiveUser = activeUsers.find(u => u.email === email);
-    const existingPendingUser = pendingUsers.find(u => u.email === email);
+    // Check if user already exists
+    const existingUser = mockUsers.find(u => u.email === email);
+    const existingPending = pendingUsers.find(u => u.email === email);
     
-    if (existingActiveUser || existingPendingUser) {
+    if (existingUser || existingPending) {
       setLoading(false);
-      return { success: false, message: 'User with this email already exists' };
+      return { success: false, message: 'An account with this email already exists' };
+    }
+
+    // Prevent direct admin/general_manager signup
+    if (role === 'admin' || role === 'general_manager') {
+      setLoading(false);
+      return { success: false, message: 'Admin and General Manager accounts must be created by existing administrators' };
     }
     
-    const newUser: User = {
-      id: Date.now().toString(),
+    // Add user to pending approval list instead of directly creating account
+    const newPendingUser: PendingUser = {
+      id: `pending_${Date.now()}`,
       name,
       email,
-      role: role as 'admin' | 'general_manager' | 'project_manager' | 'engineer' | 'consultant' | 'employee',
+      role: role as 'project_manager' | 'engineer' | 'consultant' | 'employee',
       department: 'General',
-      approved: false,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      status: 'pending'
     };
     
-    // Add to pending users list
-    setPendingUsers(prev => {
-      const updated = [...prev, newUser];
-      return updated;
-    });
-    
+    pendingUsers.push(newPendingUser);
     setLoading(false);
     return { 
       success: true, 
-      message: 'Account created successfully! Your account is pending admin approval. Once approved, you will be able to access your account.' 
+      message: 'Account created successfully! Your registration is pending admin approval. You will be notified once approved.' 
     };
   };
 
@@ -286,51 +260,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return allowedRoles.includes(user.role);
   };
 
-  const approveUser = (userId: string) => {
-    const userToApprove = pendingUsers.find(u => u.id === userId);
-    if (userToApprove) {
-      const approvedUser = { ...userToApprove, approved: true };
+  const getPendingUsers = (): PendingUser[] => {
+    return pendingUsers.filter(u => u.status === 'pending');
+  };
+
+  const approveUser = async (userId: string): Promise<boolean> => {
+    try {
+      const pendingUser = pendingUsers.find(u => u.id === userId);
+      if (!pendingUser) return false;
+
+      // Create approved user
+      const newUser: User = {
+        id: Date.now().toString(),
+        name: pendingUser.name,
+        email: pendingUser.email,
+        role: pendingUser.role as any,
+        department: pendingUser.department
+      };
+
+      // Add to approved users
+      mockUsers.push(newUser);
       
-      // Add to active users
-      setActiveUsers(prev => [...prev, approvedUser]);
-      
-      // Remove from pending users
-      setPendingUsers(prev => prev.filter(u => u.id !== userId));
+      // Update pending user status
+      pendingUsers = pendingUsers.map(u => 
+        u.id === userId ? { ...u, status: 'approved' as const } : u
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error approving user:', error);
+      return false;
     }
   };
 
-  const rejectUser = (userId: string) => {
-    setPendingUsers(prev => prev.filter(u => u.id !== userId));
-  };
-
-  const createUser = async (userData: {name: string, email: string, password: string, role: string, department: string}): Promise<{success: boolean, message?: string}> => {
-    // Check if user already exists
-    const existingActiveUser = activeUsers.find(u => u.email === userData.email);
-    const existingPendingUser = pendingUsers.find(u => u.email === userData.email);
-    
-    if (existingActiveUser || existingPendingUser) {
-      return { success: false, message: 'User with this email already exists' };
+  const rejectUser = async (userId: string): Promise<boolean> => {
+    try {
+      pendingUsers = pendingUsers.map(u => 
+        u.id === userId ? { ...u, status: 'rejected' as const } : u
+      );
+      return true;
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      return false;
     }
-
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: userData.name,
-      email: userData.email,
-      role: userData.role as 'admin' | 'general_manager' | 'project_manager' | 'engineer' | 'consultant' | 'employee',
-      department: userData.department,
-      approved: true, // Admin-created users are immediately approved
-      created_at: new Date().toISOString()
-    };
-
-    // Add directly to active users
-    setActiveUsers(prev => [...prev, newUser]);
-    return { success: true, message: `User ${userData.name} has been created successfully` };
-  };
-
-  const refreshUsers = () => {
-    // Force refresh from localStorage
-    setActiveUsers(getInitialActiveUsers());
-    setPendingUsers(getInitialPendingUsers());
   };
 
   return (
@@ -345,12 +317,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         hasPermission,
         hasRole,
         canAccessModule,
-        pendingUsers,
-        activeUsers,
+        getPendingUsers,
         approveUser,
-        rejectUser,
-        createUser,
-        refreshUsers
+        rejectUser
       }}
     >
       {children}
