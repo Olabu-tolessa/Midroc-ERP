@@ -121,13 +121,18 @@ const FORM_TEMPLATES = {
       site_location: '',
       client: '',
       contractor: '',
-      consultant: '',
+      consultant: 'Gobalaffo Consulting Architects & Engineers P.L.C',
       date: '',
       handover_details: {
         site_description: '',
         handover_date: '',
         work_commencement_date: ''
-      }
+      },
+      handover_note: 'The site for the construction of',
+      witness1_name: '',
+      witness1_representing: '',
+      witness2_name: '',
+      witness2_representing: ''
     }
   }
 };
