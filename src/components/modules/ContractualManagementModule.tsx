@@ -787,6 +787,260 @@ const ContractualManagementModule: React.FC = () => {
 
     const renderFormContent = () => {
       switch (selectedForm.template_type) {
+        case 'document_acquisition':
+          return (
+            <div className="space-y-6" ref={formRef}>
+              {/* Professional Header */}
+              <div className="bg-white border-2 border-gray-800">
+                {/* Top Header Bar */}
+                <div className="border-b border-gray-800 p-2">
+                  <div className="grid grid-cols-3 gap-4 items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-green-600 text-white p-2 text-xs font-bold">MIG</div>
+                      <div className="text-xs">
+                        <div className="font-bold">Company Name:</div>
+                        <div>Gobalaffo Consulting Architects & Engineers P.L.C</div>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold">Document No.</div>
+                      <div className="text-red-600 font-bold">GCAE/COE/001</div>
+                    </div>
+                    <div className="text-right text-xs">
+                      <div>Effective Date: {selectedForm.effective_date}</div>
+                      <div>Issue No: 1</div>
+                      <div>Page: 1 of 1</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Title */}
+                <div className="bg-gray-100 px-4 py-2 border-b border-gray-800 text-center">
+                  <div className="font-bold text-lg">Acquisition of Document Form</div>
+                </div>
+
+                {/* Form Content */}
+                <div className="p-6 space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex">
+                      <span className="font-bold w-32">PROJECT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.project_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">SITE LOCATION: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.site_location}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CLIENT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.client_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CONTRACTOR:</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.contractor_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CONSULTANT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">Gobalaffo Consulting Architects & Engineers P.L.C</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <p className="mb-4">This is to acknowledge that I have received the following set of documents concerning the project.</p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <span className="w-6">1.</span>
+                        <span>Contract Documents No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">2.</span>
+                        <span>Architectural Drawings No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">3.</span>
+                        <span>Structural Drawings No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">4.</span>
+                        <span>Electrical Drawing No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">5.</span>
+                        <span>Sanitary Drawing No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">6.</span>
+                        <span>Mechanical Drawing No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">7.</span>
+                        <span>Bill of Quantities</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                        <span className="ml-2">Pages</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="w-6">8.</span>
+                        <span>Other No.</span>
+                        <div className="border-b border-gray-800 flex-1 ml-2 min-h-[1.5rem]"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signature Section */}
+                  <div className="mt-8 grid grid-cols-2 gap-8">
+                    <div className="text-center">
+                      <div className="font-bold mb-4">DOCUMENT HANDED OVER</div>
+                      {selectedForm.contractor_signature && (
+                        <img src={selectedForm.contractor_signature} alt="Contractor Signature" className="max-h-16 mx-auto mb-2" />
+                      )}
+                      <div className="border-b border-gray-300 mb-2 min-h-[3rem]"></div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold mb-4">DOCUMENT RECEIVED BY</div>
+                      {selectedForm.client_signature && (
+                        <img src={selectedForm.client_signature} alt="Client Signature" className="max-h-16 mx-auto mb-2" />
+                      )}
+                      <div className="border-b border-gray-300 mb-2 min-h-[3rem]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
+        case 'site_handover_inspection':
+          return (
+            <div className="space-y-6" ref={formRef}>
+              {/* Professional Header */}
+              <div className="bg-white border-2 border-gray-800">
+                {/* Top Header Bar */}
+                <div className="border-b border-gray-800 p-2">
+                  <div className="grid grid-cols-3 gap-4 items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-green-600 text-white p-2 text-xs font-bold">MIG</div>
+                      <div className="text-xs">
+                        <div className="font-bold">Company Name:</div>
+                        <div>Gobalaffo Consulting Architects & Engineers P.L.C</div>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold">Document No.</div>
+                      <div className="text-red-600 font-bold">GCAE/COE/003</div>
+                    </div>
+                    <div className="text-right text-xs">
+                      <div>Effective Date: {selectedForm.effective_date}</div>
+                      <div>Issue No: 1</div>
+                      <div>Page: 1 of 2</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Title */}
+                <div className="bg-gray-100 px-4 py-2 border-b border-gray-800 text-center">
+                  <div className="font-bold text-lg">Site Handover Inspection Certificate</div>
+                </div>
+
+                {/* Form Content */}
+                <div className="p-6 space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex">
+                      <span className="font-bold w-32">PROJECT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.project_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">SITE LOCATION: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.site_location}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CLIENT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.client_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CONTRACTOR:</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">{selectedForm.contractor_name}</div>
+                    </div>
+                    <div className="flex">
+                      <span className="font-bold w-32">CONSULTANT: -</span>
+                      <div className="border-b border-gray-800 flex-1 min-h-[1.5rem]">Gobalaffo Consulting Architects & Engineers P.L.C</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <div className="font-bold text-sm mb-2">1. Site</div>
+                      <div className="ml-4 space-y-1 text-sm">
+                        <div className="flex"><span className="w-4">•</span><span>Surface soil</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Surface water</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Surface slope</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Adjacent construction</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Accessibility</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-bold text-sm mb-2">2. Obstruction</div>
+                      <div className="ml-4 space-y-1 text-sm">
+                        <div className="flex"><span className="w-4">•</span><span>Trees and bushes</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Water supply lines</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Sewer/drainage lines</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Telephone line</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Road/railway line</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Over ground structure</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Underground structure</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Others</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-bold text-sm mb-2">3. Reference</div>
+                      <div className="ml-4 space-y-1 text-sm">
+                        <div className="flex"><span className="w-4">•</span><span>Bench mark</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Corner stone</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Border lines</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Water supply connection points</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Electric connection points</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                        <div className="flex"><span className="w-4">•</span><span>Sewer/drainage connection points</span><div className="border-b border-gray-800 flex-1 ml-2"></div></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-bold text-sm mb-2">4. Additional items/comments:</div>
+                      <div className="border border-gray-800 min-h-[3rem] p-2"></div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 text-sm">
+                    <p>Following an inspection of the site as per the above listed items the contractor is hereby advised to take over the site and precede with the subsequent mobilization, site preparation and the construction work as per the contract agreement and the respective schedule.</p>
+                  </div>
+
+                  {/* Signature Section */}
+                  <div className="mt-8 grid grid-cols-2 gap-8">
+                    <div className="text-center">
+                      <div className="font-bold mb-4">Supervisor</div>
+                      <div className="space-y-2">
+                        <div>Name</div>
+                        <div className="border-b border-gray-300 min-h-[2rem]"></div>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold mb-4">Contractors</div>
+                      <div className="space-y-2">
+                        <div>Name</div>
+                        <div className="border-b border-gray-300 min-h-[2rem]"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
         case 'site_handover':
           return (
             <div className="space-y-6" ref={formRef}>
