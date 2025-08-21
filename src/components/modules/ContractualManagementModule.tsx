@@ -340,7 +340,11 @@ const ContractualManagementModule: React.FC = () => {
 
       setContractForms(prev => [...prev, newForm]);
       setShowNewFormModal(false);
-      
+
+      // Show the newly created form details
+      setSelectedForm(newForm);
+      setShowFormDetailsModal(true);
+
       // Reset form
       setFormData({
         template_type: 'document_acquisition',
