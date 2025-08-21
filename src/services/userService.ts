@@ -23,6 +23,11 @@ export interface PendingUser {
 export const userService = {
   // Get all active users from database
   async getActiveUsers(): Promise<User[]> {
+    if (!isSupabaseConfigured) {
+      console.warn('Supabase not configured, returning empty users list');
+      return [];
+    }
+
     try {
       const { data, error } = await supabase
         .from('users')
