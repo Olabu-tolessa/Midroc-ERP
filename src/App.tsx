@@ -4,6 +4,7 @@ import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
 import { PendingApprovalPage } from './components/auth/PendingApprovalPage';
 import { Navigation } from './components/layout/Navigation';
+import { NetworkStatus, DatabaseStatus } from './components/NetworkStatus';
 import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
 import { HRModule } from './components/modules/HRModule';
