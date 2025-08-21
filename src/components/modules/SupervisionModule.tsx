@@ -121,7 +121,7 @@ const SupervisionModule: React.FC = () => {
 
   const loadQualitySafetyReports = async () => {
     try {
-      // Mock data for Quality & Safety reports
+      // Mock data for Quality & Safety reports (Structural Design Checklist format)
       const mockQSReports: QualitySafetyReport[] = [
         {
           id: 'qs1',
@@ -130,38 +130,36 @@ const SupervisionModule: React.FC = () => {
           inspector_id: '5',
           inspector_name: 'David Chen',
           inspection_date: '2024-01-15',
-          inspection_type: 'combined',
+          inspection_type: 'structural_design',
+          document_number: 'GCAE/COE/004',
+          page_info: { current: 1, total: 3 },
           checklist_items: [
             {
-              category: 'Personal Protective Equipment',
+              section_number: 1,
+              section_title: 'General requirements',
               items: [
-                { description: 'Hard hats worn by all personnel', status: 'pass' },
-                { description: 'Safety vests visible and clean', status: 'pass' },
-                { description: 'Steel-toed boots worn', status: 'fail', notes: 'Two workers wearing regular shoes' }
+                { criteria: 'Correspondence of details to the results of statical analysis', checked: true, not_required: false, remark: '' },
+                { criteria: 'Completeness of dimensions and designations needed for checking the structural components', checked: true, not_required: false, remark: '' },
+                { criteria: 'Completeness of dimensions and designations for connections and with reference to other relevant drawings where necessary', checked: false, not_required: false, remark: 'Missing connection details on sheet 3' },
+                { criteria: 'Appropriateness of scales used for the structural drawings', checked: true, not_required: false, remark: '' },
+                { criteria: 'Amendments to affected drawings due to alterations or modifications', checked: true, not_required: false, remark: '' }
               ]
             },
             {
-              category: 'Site Safety',
+              section_number: 2,
+              section_title: 'Foundation details',
               items: [
-                { description: 'Proper barriers around excavation', status: 'pass' },
-                { description: 'Emergency exits clearly marked', status: 'pass' },
-                { description: 'First aid station accessible', status: 'pass' }
-              ]
-            },
-            {
-              category: 'Quality Control',
-              items: [
-                { description: 'Material quality meets specifications', status: 'pass' },
-                { description: 'Workmanship according to standards', status: 'pass' },
-                { description: 'Measurements within tolerance', status: 'fail', notes: 'Foundation depth 5cm short' }
+                { criteria: 'Foundation plan showing the foundation layout including layout of columns, grade beams, shear walls, slabs, etc and with complete dimensions and designations', checked: true, not_required: false, remark: '' },
+                { criteria: 'Sections for foundations and all relevant details and reinforcements, complete with dimensions and levels and provision of lean concrete', checked: false, not_required: false, remark: 'Lean concrete specification missing' },
+                { criteria: 'Longitudinal section with reinforcements indicating beam location, dimensions and level', checked: true, not_required: false, remark: '' }
               ]
             }
           ],
-          overall_score: 75,
-          critical_issues: ['Foundation depth below specification', 'PPE compliance issue'],
-          recommendations: ['Immediate correction of foundation depth', 'Mandatory PPE training for all workers'],
-          photos: [],
-          status: 'requires_action',
+          checked_by: 'David Chen',
+          approved_by: 'Sarah Mitchell',
+          assigned_to: '5',
+          assigned_to_name: 'David Chen',
+          status: 'in_progress',
           created_at: '2024-01-15T10:00:00Z'
         },
         {
@@ -171,29 +169,28 @@ const SupervisionModule: React.FC = () => {
           inspector_id: '5',
           inspector_name: 'David Chen',
           inspection_date: '2024-01-14',
-          inspection_type: 'safety',
+          inspection_type: 'structural_design',
+          document_number: 'GCAE/COE/005',
+          page_info: { current: 1, total: 2 },
           checklist_items: [
             {
-              category: 'Personal Protective Equipment',
+              section_number: 1,
+              section_title: 'General requirements',
               items: [
-                { description: 'Hard hats worn by all personnel', status: 'pass' },
-                { description: 'Safety vests visible and clean', status: 'pass' },
-                { description: 'Steel-toed boots worn', status: 'pass' }
-              ]
-            },
-            {
-              category: 'Equipment Safety',
-              items: [
-                { description: 'Machinery properly maintained', status: 'pass' },
-                { description: 'Safety guards in place', status: 'pass' },
-                { description: 'Emergency stop buttons functional', status: 'pass' }
+                { criteria: 'Correspondence of details to the results of statical analysis', checked: true, not_required: false, remark: '' },
+                { criteria: 'Completeness of dimensions and designations needed for checking the structural components', checked: true, not_required: false, remark: '' },
+                { criteria: 'Completeness of dimensions and designations for connections and with reference to other relevant drawings where necessary', checked: true, not_required: false, remark: '' }
               ]
             }
           ],
-          overall_score: 95,
-          critical_issues: [],
-          recommendations: ['Continue current safety practices'],
-          photos: [],
+          checked_by: 'David Chen',
+          checked_by_signature: 'signed',
+          checked_by_date: '2024-01-14T14:30:00Z',
+          approved_by: 'Sarah Mitchell',
+          approved_by_signature: 'signed',
+          approved_by_date: '2024-01-14T15:00:00Z',
+          assigned_to: '5',
+          assigned_to_name: 'David Chen',
           status: 'approved',
           created_at: '2024-01-14T14:30:00Z'
         }
