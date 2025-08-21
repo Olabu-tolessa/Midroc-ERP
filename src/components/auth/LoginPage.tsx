@@ -61,6 +61,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
             <p><span className="font-medium">Consultant:</span> consultant@midroc.com (Consulting Access)</p>
             <p><span className="font-medium">Engineer:</span> engineer@midroc.com (Technical Access)</p>
             <p><span className="font-medium">Client:</span> client@midroc.com (Project Tracking & Contract Signing)</p>
+            <p><span className="font-medium">Contractor:</span> contractor@midroc.com (Project Execution & Contract Signing)</p>
             <p><span className="font-medium">Employee:</span> employee@midroc.com (Limited Access)</p>
           </div>
         </div>
