@@ -144,6 +144,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                 <option value="engineer">Engineer</option>
                 <option value="consultant">Consultant</option>
                 <option value="client">Client</option>
+                <option value="contractor">Contractor</option>
                 <option value="employee">Employee</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
