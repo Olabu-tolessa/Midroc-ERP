@@ -43,11 +43,15 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-700 to-green-800 rounded-lg flex items-center justify-center shadow-md">
-            <Building2 className="w-6 h-6 text-white" />
+          <div className="w-16 h-12 bg-white rounded-lg flex items-center justify-center shadow-md p-1 border">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa277c4669d86451fa82a2c1c19c543ba%2F7073ebd30eee4e56929e82612bb1ae92?format=webp&width=800"
+              alt="Midroc Investment Group"
+              className="h-full w-auto object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Midroc ERP</h1>
+            <h1 className="text-xl font-bold text-gray-900">MIDROC ERP</h1>
             <p className="text-sm text-gray-600">Construction & Consulting</p>
           </div>
         </div>
