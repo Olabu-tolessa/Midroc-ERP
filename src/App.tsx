@@ -108,15 +108,19 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Navigation 
-        currentModule={currentModule} 
-        onModuleChange={setCurrentModule} 
-      />
-      <main className="flex-1 ml-64 p-6 lg:p-8">
-        {renderModule()}
-      </main>
-    </div>
+    <>
+      <div className="min-h-screen bg-gray-50 flex">
+        <Navigation
+          currentModule={currentModule}
+          onModuleChange={setCurrentModule}
+        />
+        <main className="flex-1 ml-64 p-6 lg:p-8">
+          {renderModule()}
+        </main>
+      </div>
+      <NetworkStatus />
+      <DatabaseStatus />
+    </>
   );
 };
 
