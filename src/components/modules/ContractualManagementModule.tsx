@@ -1044,11 +1044,18 @@ const ContractualManagementModule: React.FC = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Contract Forms</h2>
-          <p className="text-gray-600">Manage contract forms and digital signatures</p>
+          <h2 className="text-2xl font-bold text-gray-900">Contract Management</h2>
+          <p className="text-gray-600">Manage contracts, forms and digital signatures</p>
         </div>
         {isAuthorized && (
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowCreateContractModal(true)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              New Contract
+            </button>
             <button
               onClick={() => setShowNewFormModal(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
@@ -1058,6 +1065,30 @@ const ContractualManagementModule: React.FC = () => {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          onClick={() => setActiveTab('contracts')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'contracts'
+              ? 'border-green-500 text-green-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Contracts ({contracts.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('forms')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'forms'
+              ? 'border-green-500 text-green-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Forms ({filteredForms.length})
+        </button>
       </div>
 
       {/* Contract Forms List */}
