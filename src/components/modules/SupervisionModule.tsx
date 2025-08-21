@@ -343,47 +343,54 @@ const SupervisionModule: React.FC = () => {
     const [formData, setFormData] = useState({
       project_id: '',
       inspection_date: new Date().toISOString().split('T')[0],
-      inspection_type: 'combined',
+      inspection_type: 'structural_design',
+      document_number: `GCAE/COE/${String(Date.now()).slice(-3)}`,
+      page_info: { current: 1, total: 3 },
       checklist_items: [
         {
-          category: 'Personal Protective Equipment',
+          section_number: 1,
+          section_title: 'General requirements',
           items: [
-            { description: 'Hard hats worn by all personnel', status: 'pass' as const, notes: '' },
-            { description: 'Safety vests visible and clean', status: 'pass' as const, notes: '' },
-            { description: 'Steel-toed boots worn', status: 'pass' as const, notes: '' },
-            { description: 'Eye protection used when required', status: 'pass' as const, notes: '' }
+            { criteria: 'Correspondence of details to the results of statical analysis', checked: false, not_required: false, remark: '' },
+            { criteria: 'Completeness of dimensions and designations needed for checking the structural components', checked: false, not_required: false, remark: '' },
+            { criteria: 'Completeness of dimensions and designations for connections and with reference to other relevant drawings where necessary', checked: false, not_required: false, remark: '' },
+            { criteria: 'Appropriateness of scales used for the structural drawings', checked: false, not_required: false, remark: '' },
+            { criteria: 'Amendments to affected drawings due to alterations or modifications', checked: false, not_required: false, remark: '' },
+            { criteria: 'Essential notes on drawings specifying material strength (Example - concrete, steel grade etc), cover to reinforcements, notes to details, bar overlaps, foundation depths, earthworks, fills and compaction standards', checked: false, not_required: false, remark: '' }
           ]
         },
         {
-          category: 'Site Safety',
+          section_number: 2,
+          section_title: 'Foundation details',
           items: [
-            { description: 'Proper barriers around excavation', status: 'pass' as const, notes: '' },
-            { description: 'Emergency exits clearly marked', status: 'pass' as const, notes: '' },
-            { description: 'First aid station accessible', status: 'pass' as const, notes: '' },
-            { description: 'Fire extinguishers available and inspected', status: 'pass' as const, notes: '' }
+            { criteria: 'Foundation plan showing the foundation layout including layout of columns, grade beams, shear walls, slabs, etc and with complete dimensions and designations', checked: false, not_required: false, remark: '' },
+            { criteria: 'Sections for foundations and all relevant details and reinforcements, complete with dimensions and levels and provision of lean concrete', checked: false, not_required: false, remark: '' },
+            { criteria: 'Longitudinal section with reinforcements indicating beam location, dimensions and level', checked: false, not_required: false, remark: '' },
+            { criteria: 'Indicating diameter, length, shape and lap of re-bars for longitudinal section, size and spacing of stirrups and supplementary reinforcements where necessary', checked: false, not_required: false, remark: '' }
           ]
         },
         {
-          category: 'Equipment Safety',
+          section_number: 3,
+          section_title: 'Beams',
           items: [
-            { description: 'Machinery properly maintained', status: 'pass' as const, notes: '' },
-            { description: 'Safety guards in place', status: 'pass' as const, notes: '' },
-            { description: 'Emergency stop buttons functional', status: 'pass' as const, notes: '' },
-            { description: 'Electrical equipment properly grounded', status: 'pass' as const, notes: '' }
+            { criteria: 'Sections along beams where necessary and all relevant details and reinforcements complete with dimensions and details of stirrups', checked: false, not_required: false, remark: '' },
+            { criteria: 'Longitudinal section with reinforcements indicating column/wall location, dimensions and level', checked: false, not_required: false, remark: '' },
+            { criteria: 'Indicating diameter, length, shape and lap of re-bars for longitudinal section, size and spacing of stirrups and supplementary reinforcements where necessary', checked: false, not_required: false, remark: '' }
           ]
         },
         {
-          category: 'Quality Control',
+          section_number: 4,
+          section_title: 'Columns and reinforced concrete walls',
           items: [
-            { description: 'Material quality meets specifications', status: 'pass' as const, notes: '' },
-            { description: 'Workmanship according to standards', status: 'pass' as const, notes: '' },
-            { description: 'Measurements within tolerance', status: 'pass' as const, notes: '' },
-            { description: 'Documentation complete and accurate', status: 'pass' as const, notes: '' }
+            { criteria: 'Longitudinal section with reinforcements indicating column/wall location, dimensions and level', checked: false, not_required: false, remark: '' },
+            { criteria: 'Indicating diameter, length, shape and lap of re-bars for longitudinal section, size and spacing of stirrups and supplementary reinforcements where necessary', checked: false, not_required: false, remark: '' },
+            { criteria: 'Sections along column/wall height where necessary and all relevant details and reinforcements complete with dimensions and details of stirrups', checked: false, not_required: false, remark: '' }
           ]
         }
       ],
-      critical_issues: '',
-      recommendations: ''
+      checked_by: user?.name || '',
+      approved_by: '',
+      assigned_to: ''
     });
 
     const updateChecklistItem = (categoryIndex: number, itemIndex: number, field: string, value: any) => {
