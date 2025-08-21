@@ -60,6 +60,10 @@ const SupervisionModule: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewReportModal, setShowNewReportModal] = useState(false);
   const [showNewQSModal, setShowNewQSModal] = useState(false);
+  const [showQSSignModal, setShowQSSignModal] = useState(false);
+  const [showQSAssignModal, setShowQSAssignModal] = useState(false);
+  const [selectedQSReport, setSelectedQSReport] = useState<QualitySafetyReport | null>(null);
+  const [signingAs, setSigningAs] = useState<'checker' | 'approver'>('checker');
   const [activeTab, setActiveTab] = useState<'supervision' | 'quality_safety'>('supervision');
 
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager' || user?.role === 'project_manager';
