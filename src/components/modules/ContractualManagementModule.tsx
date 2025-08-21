@@ -230,12 +230,23 @@ const ContractualManagementModule: React.FC = () => {
       contractor_user_name: ''
     });
 
-    const mockUsers = [
-      { id: '7', name: 'Ahmed Mohammed', email: 'ahmed@client.com', role: 'client' },
-      { id: '8', name: 'Sara Wilson', email: 'sara@contractor.com', role: 'contractor' },
-      { id: '9', name: 'Mike Johnson', email: 'mike@midroc.com', role: 'project_manager' },
-      { id: '10', name: 'Lisa Chen', email: 'lisa@consultant.com', role: 'consultant' }
-    ];
+    // Get real users from localStorage (created users) and AuthContext (mock users)
+    const getRealUsers = () => {
+      const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+      const mockUsers = [
+        { id: '1', name: 'John Anderson', email: 'admin@midroc.com', role: 'admin' },
+        { id: '2', name: 'Sarah Mitchell', email: 'gm@midroc.com', role: 'general_manager' },
+        { id: '3', name: 'Michael Rodriguez', email: 'pm@midroc.com', role: 'project_manager' },
+        { id: '4', name: 'Emma Thompson', email: 'consultant@midroc.com', role: 'consultant' },
+        { id: '5', name: 'David Chen', email: 'engineer@midroc.com', role: 'engineer' },
+        { id: '6', name: 'Lisa Johnson', email: 'employee@midroc.com', role: 'employee' },
+        { id: '7', name: 'Ahmed Hassan', email: 'client@midroc.com', role: 'client' },
+        { id: '8', name: 'Mohamed Ali', email: 'contractor@midroc.com', role: 'contractor' }
+      ];
+      return [...mockUsers, ...createdUsers];
+    };
+
+    const allUsers = getRealUsers();
 
     const handleAssign = () => {
       if (!selectedForm) return;
