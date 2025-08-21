@@ -97,6 +97,13 @@ const ROLE_PERMISSIONS = {
     'view_own_projects',
     'sign_assigned_contracts',
     'view_project_progress'
+  ],
+  contractor: [
+    'view_dashboard',
+    'view_assigned_projects',
+    'sign_assigned_contracts',
+    'view_project_progress',
+    'submit_progress_reports'
   ]
 };
 
