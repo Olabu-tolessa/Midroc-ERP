@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Search, Filter, Eye, Edit, Trash2, Download, Calendar, AlertTriangle, CheckCircle, Clock, Shield, HardHat, FileText, Users, MapPin, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import SignatureCanvas from 'react-signature-canvas';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
 
 interface SupervisionReport {
   id: string;
