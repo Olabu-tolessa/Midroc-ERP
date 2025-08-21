@@ -529,7 +529,7 @@ const UserManagementModule: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600">Create users and approve registrations</p>
+          <p className="text-gray-600">Manage active users and approve registrations</p>
         </div>
         <div className="flex items-center gap-4">
           <button
@@ -539,11 +539,41 @@ const UserManagementModule: React.FC = () => {
             <Plus className="w-4 h-4" />
             Create User
           </button>
-          <div className="text-right">
-            <div className="text-sm text-gray-600">Total Pending</div>
-            <div className="text-2xl font-bold text-orange-600">{pendingUsers.length}</div>
+          <div className="grid grid-cols-2 gap-4 text-right">
+            <div>
+              <div className="text-sm text-gray-600">Active Users</div>
+              <div className="text-2xl font-bold text-green-600">{activeUsers.length}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Pending</div>
+              <div className="text-2xl font-bold text-orange-600">{pendingUsers.length}</div>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          onClick={() => setActiveTab('active')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'active'
+              ? 'border-green-500 text-green-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Active Users ({activeUsers.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'pending'
+              ? 'border-green-500 text-green-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Pending Approval ({pendingUsers.length})
+        </button>
       </div>
 
       {/* Statistics */}
