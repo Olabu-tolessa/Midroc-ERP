@@ -4,311 +4,228 @@ import {
   UserCheck, 
   UserX, 
   Clock, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
-  Mail,
+  Shield, 
+  Mail, 
   Calendar,
-  Shield,
-  Search,
-  Filter,
-  Plus,
-  UserPlus,
-  Activity,
-  Archive,
-  Edit,
-  Trash2
+  CheckCircle,
+  XCircle,
+  Eye,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { User } from '../../types';
+
+interface PendingUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
 
 const UserManagementModule: React.FC = () => {
-  const { user, pendingUsers, approveUser, rejectUser } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'create'>('active');
+  const { user, getPendingUsers, approveUser, rejectUser } = useAuth();
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [activeUsers, setActiveUsers] = useState<User[]>([]);
-
-  const isAdmin = user?.role === 'admin' || user?.role === 'general_manager';
+  const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
-    // Load active users (mock data - in real app would come from Supabase)
-    const mockActiveUsers: User[] = [
-      {
-        id: '1',
-        name: 'John Anderson',
-        email: 'admin@midroc.com',
-        role: 'admin',
-        department: 'Administration',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '2',
-        name: 'Sarah Mitchell',
-        email: 'gm@midroc.com',
-        role: 'general_manager',
-        department: 'Construction Management',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '3',
-        name: 'Michael Rodriguez',
-        email: 'pm@midroc.com',
-        role: 'project_manager',
-        department: 'Highway Construction',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '4',
-        name: 'Emma Thompson',
-        email: 'consultant@midroc.com',
-        role: 'consultant',
-        department: 'Urban Planning',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '5',
-        name: 'David Chen',
-        email: 'engineer@midroc.com',
-        role: 'engineer',
-        department: 'Structural Engineering',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '6',
-        name: 'Lisa Johnson',
-        email: 'employee@midroc.com',
-        role: 'employee',
-        department: 'General Construction',
-        approved: true,
-        created_at: '2024-01-01T00:00:00Z'
-      }
-    ];
-    setActiveUsers(mockActiveUsers);
+    loadPendingUsers();
   }, []);
 
-  if (!isAdmin) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12">
-          <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Restricted</h2>
-          <p className="text-gray-600">Only administrators can access user management.</p>
-        </div>
-      </div>
-    );
-  }
+  const loadPendingUsers = () => {
+    try {
+      setLoading(true);
+      const users = getPendingUsers();
+      setPendingUsers(users);
+    } catch (error) {
+      console.error('Error loading pending users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleApprove = (userId: string, userName: string) => {
-    approveUser(userId);
-    setNotification({
-      type: 'success',
-      message: `${userName} has been approved and can now login.`
-    });
+  const handleApprove = async (userId: string) => {
+    try {
+      const success = await approveUser(userId);
+      if (success) {
+        setNotification({
+          type: 'success',
+          message: 'User approved successfully! They can now log in with their credentials.'
+        });
+        loadPendingUsers(); // Refresh the list
+      } else {
+        setNotification({
+          type: 'error',
+          message: 'Failed to approve user. Please try again.'
+        });
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
+      setNotification({
+        type: 'error',
+        message: 'An error occurred while approving the user.'
+      });
+    }
+    
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleReject = (userId: string, userName: string) => {
-    if (window.confirm(`Are you sure you want to reject ${userName}'s account request?`)) {
-      rejectUser(userId);
+  const handleReject = async (userId: string) => {
+    try {
+      const success = await rejectUser(userId);
+      if (success) {
+        setNotification({
+          type: 'success',
+          message: 'User registration rejected.'
+        });
+        loadPendingUsers(); // Refresh the list
+      } else {
+        setNotification({
+          type: 'error',
+          message: 'Failed to reject user. Please try again.'
+        });
+      }
+    } catch (error) {
+      console.error('Error rejecting user:', error);
       setNotification({
-        type: 'success',
-        message: `${userName}'s account request has been rejected.`
+        type: 'error',
+        message: 'An error occurred while rejecting the user.'
       });
-      setTimeout(() => setNotification(null), 3000);
     }
+    
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'general_manager': return 'bg-purple-100 text-purple-800';
       case 'project_manager': return 'bg-blue-100 text-blue-800';
       case 'engineer': return 'bg-green-100 text-green-800';
-      case 'consultant': return 'bg-yellow-100 text-yellow-800';
+      case 'consultant': return 'bg-purple-100 text-purple-800';
       case 'employee': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const formatRoleName = (role: string) => {
+  const formatRole = (role: string) => {
     return role.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
 
-  const CreateUserModal = () => {
-    const [formData, setFormData] = useState({
-      name: '',
-      email: '',
-      role: 'employee',
-      department: '',
-      password: 'password123' // Default password
-    });
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setLoading(true);
-
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const newUser: User = {
-          id: Date.now().toString(),
-          name: formData.name,
-          email: formData.email,
-          role: formData.role as any,
-          department: formData.department,
-          approved: true,
-          created_at: new Date().toISOString()
-        };
-
-        // Add to active users
-        setActiveUsers(prev => [...prev, newUser]);
-        
-        setNotification({
-          type: 'success',
-          message: `User ${formData.name} has been created successfully.`
-        });
-        
-        setShowCreateModal(false);
-        setFormData({
-          name: '',
-          email: '',
-          role: 'employee',
-          department: '',
-          password: 'password123'
-        });
-      } catch (error) {
-        setNotification({
-          type: 'error',
-          message: 'Failed to create user. Please try again.'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const UserDetailsModal = () => {
+    if (!selectedUser) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl w-full max-w-2xl">
-          <div className="p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Create New User</h3>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData({...formData, role: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="admin">Administrator</option>
-                    <option value="general_manager">General Manager</option>
-                    <option value="project_manager">Project Manager</option>
-                    <option value="engineer">Engineer</option>
-                    <option value="consultant">Consultant</option>
-                    <option value="employee">Employee</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  <input
-                    type="text"
-                    value={formData.department}
-                    onChange={(e) => setFormData({...formData, department: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="e.g. Construction Management"
-                    required
-                  />
-                </div>
-              </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-gray-900">User Registration Details</h3>
+            <button
+              onClick={() => setShowDetailsModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
 
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Default Password</label>
-                <input
-                  type="text"
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  required
-                />
-                <p className="text-sm text-gray-500 mt-1">User can change this password after first login</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <p className="text-gray-900 font-medium">{selectedUser.name}</p>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <p className="text-gray-900">{selectedUser.email}</p>
+              </div>
+            </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Creating...' : 'Create User'}
-                </button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Requested Role</label>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(selectedUser.role)}`}>
+                  {formatRole(selectedUser.role)}
+                </span>
               </div>
-            </form>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <p className="text-gray-900">{selectedUser.department}</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+              <p className="text-gray-900">
+                {new Date(selectedUser.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-yellow-800">Review Required</h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    Please review this user's information and determine if they should be granted access to the system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+            <button
+              onClick={() => setShowDetailsModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                handleReject(selectedUser.id);
+                setShowDetailsModal(false);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+            >
+              <XCircle className="w-4 h-4" />
+              Reject
+            </button>
+            <button
+              onClick={() => {
+                handleApprove(selectedUser.id);
+                setShowDetailsModal(false);
+              }}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Approve
+            </button>
           </div>
         </div>
       </div>
     );
   };
 
-  const filteredActiveUsers = activeUsers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.department?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
-
-  const filteredPendingUsers = pendingUsers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
-
-  const todayRequests = pendingUsers.filter(u => {
-    const today = new Date().toDateString();
-    const userDate = new Date(u.created_at || '').toDateString();
-    return today === userDate;
-  }).length;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -326,15 +243,14 @@ const UserManagementModule: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600">Manage active users, approvals, and create new accounts</p>
+          <p className="text-gray-600">Review and approve user registrations</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-        >
-          <UserPlus className="w-4 h-4" />
-          Create User
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <div className="text-sm text-gray-600">Total Pending</div>
+            <div className="text-2xl font-bold text-orange-600">{pendingUsers.length}</div>
+          </div>
+        </div>
       </div>
 
       {/* Statistics */}
@@ -342,16 +258,7 @@ const UserManagementModule: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-green-600">{activeUsers.length}</p>
-            </div>
-            <UserCheck className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
+              <p className="text-sm font-medium text-gray-600">Pending Approval</p>
               <p className="text-2xl font-bold text-orange-600">{pendingUsers.length}</p>
             </div>
             <Clock className="w-8 h-8 text-orange-600" />
@@ -360,199 +267,141 @@ const UserManagementModule: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">New Requests Today</p>
-              <p className="text-2xl font-bold text-blue-600">{todayRequests}</p>
+              <p className="text-sm font-medium text-gray-600">Project Managers</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {pendingUsers.filter(u => u.role === 'project_manager').length}
+              </p>
             </div>
-            <Activity className="w-8 h-8 text-blue-600" />
+            <Users className="w-8 h-8 text-blue-600" />
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-purple-600">{activeUsers.length + pendingUsers.length}</p>
+              <p className="text-sm font-medium text-gray-600">Engineers</p>
+              <p className="text-2xl font-bold text-green-600">
+                {pendingUsers.filter(u => u.role === 'engineer').length}
+              </p>
+            </div>
+            <Users className="w-8 h-8 text-green-600" />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Other Roles</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {pendingUsers.filter(u => !['project_manager', 'engineer'].includes(u.role)).length}
+              </p>
             </div>
             <Users className="w-8 h-8 text-purple-600" />
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Pending Users List */}
       <div className="bg-white rounded-lg shadow-sm border">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
-            <button
-              onClick={() => setActiveTab('active')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'active'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Active Users ({activeUsers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('pending')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'pending'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Pending Approval ({pendingUsers.length})
-            </button>
-          </nav>
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Pending User Registrations</h3>
+          <p className="text-sm text-gray-600 mt-1">Review and approve new user account requests</p>
         </div>
 
-        {/* Search */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
+        {pendingUsers.length === 0 ? (
+          <div className="p-12 text-center">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Registrations</h3>
+            <p className="text-gray-600">All user registrations have been processed.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {pendingUsers.map((pendingUser) => (
+              <div key={pendingUser.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
+                        <span className="text-blue-700 font-bold text-lg">
+                          {pendingUser.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900">{pendingUser.name}</h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-4 h-4" />
+                            {pendingUser.email}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(pendingUser.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(pendingUser.role)}`}>
+                        {formatRole(pendingUser.role)}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        Department: {pendingUser.department}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedUser(pendingUser);
+                        setShowDetailsModal(true);
+                      }}
+                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleReject(pendingUser.id)}
+                      className="px-3 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1"
+                      title="Reject"
+                    >
+                      <UserX className="w-4 h-4" />
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleApprove(pendingUser.id)}
+                      className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                      title="Approve"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* User Guide */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-start gap-3">
+          <Shield className="w-6 h-6 text-blue-600 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-blue-800 mb-2">User Approval Guidelines</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Review user's requested role and ensure it matches their intended responsibilities</li>
+              <li>• Verify email domain and user identity if necessary</li>
+              <li>• Approved users will be able to log in immediately with their registration credentials</li>
+              <li>• Rejected users will need to register again if they wish to access the system</li>
+            </ul>
           </div>
         </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {activeTab === 'active' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Active Users</h3>
-              {filteredActiveUsers.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">No active users found</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredActiveUsers.map((activeUser) => (
-                    <div key={activeUser.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center border-2 border-green-300">
-                          <span className="text-green-700 font-bold text-sm">
-                            {activeUser.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-3 mb-1">
-                            <h4 className="font-semibold text-gray-900">{activeUser.name}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(activeUser.role)}`}>
-                              {formatRoleName(activeUser.role)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {activeUser.email}
-                            </div>
-                            {activeUser.department && (
-                              <span>{activeUser.department}</span>
-                            )}
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Joined: {new Date(activeUser.created_at || '').toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-green-600 text-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          Active
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'pending' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Pending Approvals</h3>
-              {filteredPendingUsers.length === 0 ? (
-                <div className="text-center py-8">
-                  <UserCheck className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">
-                    {pendingUsers.length === 0 
-                      ? "No pending approvals"
-                      : "No users match your search criteria"
-                    }
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredPendingUsers.map((pendingUser) => (
-                    <div key={pendingUser.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center border-2 border-yellow-300">
-                          <span className="text-yellow-700 font-bold text-sm">
-                            {pendingUser.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-3 mb-1">
-                            <h4 className="font-semibold text-gray-900">{pendingUser.name}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(pendingUser.role)}`}>
-                              {formatRoleName(pendingUser.role)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {pendingUser.email}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Requested: {new Date(pendingUser.created_at || '').toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleApprove(pendingUser.id, pendingUser.name)}
-                          className="inline-flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                        >
-                          <UserCheck className="w-3 h-3" />
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReject(pendingUser.id, pendingUser.name)}
-                          className="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-                        >
-                          <UserX className="w-3 h-3" />
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Help Section */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">User Management Guidelines</h3>
-        <div className="text-sm text-blue-800 space-y-2">
-          <p><strong>• Active Users:</strong> Users who have been approved and can login to the system</p>
-          <p><strong>• Pending Approval:</strong> New registrations waiting for admin approval</p>
-          <p><strong>• Create User:</strong> Directly create new users with immediate access</p>
-          <p><strong>• Default Password:</strong> New users should change their password on first login</p>
-        </div>
-      </div>
-
-      {/* Create User Modal */}
-      {showCreateModal && <CreateUserModal />}
+      {/* Modals */}
+      {showDetailsModal && <UserDetailsModal />}
     </div>
   );
 };
