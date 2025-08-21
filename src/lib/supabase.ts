@@ -1,13 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// Check if we have real Supabase credentials
+export const isSupabaseConfigured = supabaseUrl !== 'https://placeholder-project.supabase.co' &&
+                                   supabaseKey !== 'placeholder-anon-key' &&
+                                   supabaseUrl.includes('supabase.co')
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Create Supabase client with fallback configuration
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: isSupabaseConfigured,
+    detectSessionInUrl: isSupabaseConfigured
+  }
+})
 
 // Database schemas
 export interface Database {
