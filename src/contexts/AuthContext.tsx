@@ -171,6 +171,13 @@ const mockUsers: User[] = [
     email: 'client@midroc.com',
     role: 'client',
     department: 'External Client'
+  },
+  {
+    id: '8',
+    name: 'Mohamed Ali',
+    email: 'contractor@midroc.com',
+    role: 'contractor',
+    department: 'Construction Contractor'
   }
 ];
 
