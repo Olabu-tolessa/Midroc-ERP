@@ -393,27 +393,27 @@ const SupervisionModule: React.FC = () => {
       assigned_to: ''
     });
 
-    const updateChecklistItem = (categoryIndex: number, itemIndex: number, field: string, value: any) => {
+    const updateChecklistItem = (sectionIndex: number, itemIndex: number, field: string, value: any) => {
       const updatedChecklist = [...formData.checklist_items];
-      updatedChecklist[categoryIndex].items[itemIndex] = {
-        ...updatedChecklist[categoryIndex].items[itemIndex],
+      updatedChecklist[sectionIndex].items[itemIndex] = {
+        ...updatedChecklist[sectionIndex].items[itemIndex],
         [field]: value
       };
       setFormData({...formData, checklist_items: updatedChecklist});
     };
 
-    const calculateScore = () => {
+    const calculateCompletionScore = () => {
       let totalItems = 0;
-      let passedItems = 0;
-      formData.checklist_items.forEach(category => {
-        category.items.forEach(item => {
-          if (item.status !== 'na') {
+      let checkedItems = 0;
+      formData.checklist_items.forEach(section => {
+        section.items.forEach(item => {
+          if (!item.not_required) {
             totalItems++;
-            if (item.status === 'pass') passedItems++;
+            if (item.checked) checkedItems++;
           }
         });
       });
-      return totalItems > 0 ? Math.round((passedItems / totalItems) * 100) : 0;
+      return totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
