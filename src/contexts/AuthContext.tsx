@@ -211,6 +211,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
 
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured) {
+      console.warn('Using mock authentication - Supabase not configured');
+    }
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
