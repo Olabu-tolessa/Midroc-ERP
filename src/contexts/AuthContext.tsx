@@ -91,6 +91,12 @@ const ROLE_PERMISSIONS = {
     'view_dashboard',
     'view_own_tasks',
     'view_projects_limited'
+  ],
+  client: [
+    'view_dashboard',
+    'view_own_projects',
+    'sign_assigned_contracts',
+    'view_project_progress'
   ]
 };
 
