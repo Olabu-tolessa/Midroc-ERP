@@ -30,25 +30,37 @@ interface PendingUser {
 }
 
 const UserManagementModule: React.FC = () => {
-  const { user, getPendingUsers, approveUser, rejectUser } = useAuth();
+  const { user } = useAuth();
+  const [activeUsers, setActiveUsers] = useState<DatabaseUser[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
+  const [selectedActiveUser, setSelectedActiveUser] = useState<DatabaseUser | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
 
   useEffect(() => {
-    loadPendingUsers();
+    loadAllUsers();
   }, []);
 
-  const loadPendingUsers = () => {
+  const loadAllUsers = async () => {
     try {
       setLoading(true);
-      const users = getPendingUsers();
-      setPendingUsers(users);
+      const [activeUsersData, pendingUsersData] = await Promise.all([
+        userService.getActiveUsers(),
+        userService.getPendingUsers()
+      ]);
+      setActiveUsers(activeUsersData);
+      setPendingUsers(pendingUsersData);
     } catch (error) {
-      console.error('Error loading pending users:', error);
+      console.error('Error loading users:', error);
+      setNotification({
+        type: 'error',
+        message: 'Failed to load users'
+      });
     } finally {
       setLoading(false);
     }
