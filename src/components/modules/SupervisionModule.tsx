@@ -200,6 +200,13 @@ const SupervisionModule: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredQSReports = qualitySafetyReports.filter(report => {
+    const matchesSearch = report.project_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         report.inspector_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good': return 'bg-green-100 text-green-800';
