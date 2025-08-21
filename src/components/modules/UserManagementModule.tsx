@@ -214,41 +214,44 @@ const UserManagementModule: React.FC = () => {
       }
 
       try {
-        // Create the user directly (simulating real user creation)
-        const newUser = {
-          id: Date.now().toString(),
+        const result = await userService.createUser({
           name: formData.name,
           email: formData.email,
-          role: formData.role as any,
+          password: formData.password,
+          role: formData.role,
           department: formData.department
-        };
-
-        // Add to mockUsers array in AuthContext (this would be a real API call)
-        // For now, we'll store in localStorage to simulate persistence
-        const existingUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
-        const updatedUsers = [...existingUsers, newUser];
-        localStorage.setItem('erp_created_users', JSON.stringify(updatedUsers));
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        setNotification({
-          type: 'success',
-          message: `User "${formData.name}" created successfully! They can now log in with email: ${formData.email} and password: ${formData.password}`
         });
 
-        setShowCreateUserModal(false);
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          role: 'employee',
-          department: ''
-        });
-        setErrors({});
+        if (result.success) {
+          setNotification({
+            type: 'success',
+            message: `User "${formData.name}" created successfully! They can now log in with their credentials.`
+          });
 
-        setTimeout(() => setNotification(null), 7000);
+          setShowCreateUserModal(false);
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            role: 'employee',
+            department: ''
+          });
+          setErrors({});
+
+          // Reload users list
+          loadAllUsers();
+
+          setTimeout(() => setNotification(null), 5000);
+        } else {
+          setNotification({
+            type: 'error',
+            message: result.message || 'Failed to create user. Please try again.'
+          });
+          setTimeout(() => setNotification(null), 3000);
+        }
       } catch (error) {
+        console.error('Error creating user:', error);
         setNotification({
           type: 'error',
           message: 'Failed to create user. Please try again.'
