@@ -101,6 +101,7 @@ const MODULE_ACCESS = {
   supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
   consulting: ['admin', 'general_manager', 'consultant'],
   contracts: ['admin', 'general_manager'],
+  users: ['admin'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
   bi: ['admin', 'general_manager', 'project_manager'],
