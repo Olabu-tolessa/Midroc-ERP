@@ -804,10 +804,10 @@ const ContractualManagementModule: React.FC = () => {
         useCORS: true,
         allowTaint: true
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
@@ -820,6 +820,149 @@ const ContractualManagementModule: React.FC = () => {
       pdf.save(`${form.title.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
+    }
+  };
+
+  const exportToDoc = async (form: ContractForm) => {
+    try {
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: form.title,
+                  bold: true,
+                  size: 32,
+                })
+              ],
+              alignment: AlignmentType.CENTER,
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            new Table({
+              width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+              },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Project:", bold: true })] })],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.project_name })] })],
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Site Location:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.site_location })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Client:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.client_name })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Contractor:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.contractor_name })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Effective Date:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.effective_date })] })],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Signature Status:",
+                  bold: true,
+                  size: 24,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Client Signature: ${form.client_signature ? '✓ Signed' : '✗ Pending'}`,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Contractor Signature: ${form.contractor_signature ? '✓ Signed' : '✗ Pending'}`,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Contract Status: ${form.status === 'fully_signed' ? 'Fully Executed' : 'Pending Signatures'}`,
+                  bold: true,
+                })
+              ],
+            }),
+            ...(form.client_signed_at ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Client signed on: ${new Date(form.client_signed_at).toLocaleString()}`,
+                  })
+                ],
+              })
+            ] : []),
+            ...(form.contractor_signed_at ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Contractor signed on: ${new Date(form.contractor_signed_at).toLocaleString()}`,
+                  })
+                ],
+              })
+            ] : []),
+          ],
+        }],
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      saveAs(blob, `${form.title.replace(/\s+/g, '_')}.docx`);
+    } catch (error) {
+      console.error('Error generating DOC:', error);
     }
   };
 
