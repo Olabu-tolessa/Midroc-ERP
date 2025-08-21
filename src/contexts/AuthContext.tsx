@@ -182,10 +182,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
+    // Check mock users first
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password === 'password') {
       setUser(foundUser);
@@ -193,7 +194,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
       return { success: true };
     }
-    
+
+    // Check admin-created users
+    const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+    const createdUser = createdUsers.find((u: any) => u.email === email);
+    if (createdUser) {
+      // For created users, we'll accept any password since it's stored in localStorage
+      // In a real app, passwords would be hashed and verified
+      setUser(createdUser);
+      localStorage.setItem('erp_user', JSON.stringify(createdUser));
+      setLoading(false);
+      return { success: true };
+    }
+
     setLoading(false);
     return { success: false, message: 'Invalid email or password' };
   };
