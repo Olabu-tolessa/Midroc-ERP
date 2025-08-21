@@ -1225,17 +1225,57 @@ const ContractualManagementModule: React.FC = () => {
               </div>
             </div>
 
-            {/* Assignment Info */}
+            {/* Assignment and Signature Status Info */}
             {selectedForm.status !== 'draft' && (
-              <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-800 mb-2">Assignment Details</h4>
-                <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
-                  <div>
-                    <strong>Client Assigned to:</strong> {selectedForm.client_user_name || 'Not assigned'}
+              <div className="mb-6 space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">Assignment Details</h4>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+                    <div>
+                      <strong>Client Assigned to:</strong> {selectedForm.client_user_name || 'Not assigned'}
+                    </div>
+                    <div>
+                      <strong>Contractor Assigned to:</strong> {selectedForm.contractor_user_name || 'Not assigned'}
+                    </div>
                   </div>
-                  <div>
-                    <strong>Contractor Assigned to:</strong> {selectedForm.contractor_user_name || 'Not assigned'}
+                </div>
+
+                {/* Signature Status */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-3">Signature Status</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${selectedForm.client_signature ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div>
+                        <p className="text-sm font-medium">Client Signature</p>
+                        <p className="text-xs text-gray-600">
+                          {selectedForm.client_signature
+                            ? `Signed on ${new Date(selectedForm.client_signed_at!).toLocaleString()}`
+                            : 'Pending signature'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${selectedForm.contractor_signature ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div>
+                        <p className="text-sm font-medium">Contractor Signature</p>
+                        <p className="text-xs text-gray-600">
+                          {selectedForm.contractor_signature
+                            ? `Signed on ${new Date(selectedForm.contractor_signed_at!).toLocaleString()}`
+                            : 'Pending signature'
+                          }
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
+                  {selectedForm.status === 'fully_signed' && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 font-medium">✅ Contract Fully Executed</p>
+                      <p className="text-xs text-green-700">Both parties have signed. Contract is now legally binding.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
