@@ -33,6 +33,7 @@ const UserManagementModule: React.FC = () => {
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
 
   useEffect(() => {
     loadPendingUsers();
