@@ -1137,6 +1137,10 @@ const SupervisionModule: React.FC = () => {
                 <div className="flex gap-2">
                   {isAuthorized && report.status === 'draft' && (
                     <button
+                      onClick={() => {
+                        setSelectedQSReport(report);
+                        setShowQSAssignModal(true);
+                      }}
                       className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                       title="Assign to Engineer"
                     >
@@ -1145,18 +1149,40 @@ const SupervisionModule: React.FC = () => {
                   )}
                   {report.status === 'assigned' && report.assigned_to === user?.id && (
                     <button
+                      onClick={() => {
+                        const updatedReport = { ...report, status: 'in_progress' as const };
+                        setQualitySafetyReports(prev => prev.map(r => r.id === report.id ? updatedReport : r));
+                      }}
                       className="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700"
                       title="Start Checklist"
                     >
                       Start
                     </button>
                   )}
-                  {(report.status === 'in_progress' || report.status === 'completed') && (
+                  {(report.status === 'in_progress' || report.status === 'completed') && !report.checked_by_signature && (
                     <button
+                      onClick={() => {
+                        setSelectedQSReport(report);
+                        setSigningAs('checker');
+                        setShowQSSignModal(true);
+                      }}
                       className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                      title="Sign Checklist"
+                      title="Sign as Checker"
                     >
-                      Sign
+                      Check & Sign
+                    </button>
+                  )}
+                  {report.checked_by_signature && !report.approved_by_signature && isAuthorized && (
+                    <button
+                      onClick={() => {
+                        setSelectedQSReport(report);
+                        setSigningAs('approver');
+                        setShowQSSignModal(true);
+                      }}
+                      className="px-3 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                      title="Approve & Sign"
+                    >
+                      Approve & Sign
                     </button>
                   )}
                 </div>
