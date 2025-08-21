@@ -331,6 +331,261 @@ const SupervisionModule: React.FC = () => {
     );
   };
 
+  const NewQualitySafetyModal = () => {
+    const [formData, setFormData] = useState({
+      project_id: '',
+      inspection_date: new Date().toISOString().split('T')[0],
+      inspection_type: 'combined',
+      checklist_items: [
+        {
+          category: 'Personal Protective Equipment',
+          items: [
+            { description: 'Hard hats worn by all personnel', status: 'pass' as const, notes: '' },
+            { description: 'Safety vests visible and clean', status: 'pass' as const, notes: '' },
+            { description: 'Steel-toed boots worn', status: 'pass' as const, notes: '' },
+            { description: 'Eye protection used when required', status: 'pass' as const, notes: '' }
+          ]
+        },
+        {
+          category: 'Site Safety',
+          items: [
+            { description: 'Proper barriers around excavation', status: 'pass' as const, notes: '' },
+            { description: 'Emergency exits clearly marked', status: 'pass' as const, notes: '' },
+            { description: 'First aid station accessible', status: 'pass' as const, notes: '' },
+            { description: 'Fire extinguishers available and inspected', status: 'pass' as const, notes: '' }
+          ]
+        },
+        {
+          category: 'Equipment Safety',
+          items: [
+            { description: 'Machinery properly maintained', status: 'pass' as const, notes: '' },
+            { description: 'Safety guards in place', status: 'pass' as const, notes: '' },
+            { description: 'Emergency stop buttons functional', status: 'pass' as const, notes: '' },
+            { description: 'Electrical equipment properly grounded', status: 'pass' as const, notes: '' }
+          ]
+        },
+        {
+          category: 'Quality Control',
+          items: [
+            { description: 'Material quality meets specifications', status: 'pass' as const, notes: '' },
+            { description: 'Workmanship according to standards', status: 'pass' as const, notes: '' },
+            { description: 'Measurements within tolerance', status: 'pass' as const, notes: '' },
+            { description: 'Documentation complete and accurate', status: 'pass' as const, notes: '' }
+          ]
+        }
+      ],
+      critical_issues: '',
+      recommendations: ''
+    });
+
+    const updateChecklistItem = (categoryIndex: number, itemIndex: number, field: string, value: any) => {
+      const updatedChecklist = [...formData.checklist_items];
+      updatedChecklist[categoryIndex].items[itemIndex] = {
+        ...updatedChecklist[categoryIndex].items[itemIndex],
+        [field]: value
+      };
+      setFormData({...formData, checklist_items: updatedChecklist});
+    };
+
+    const calculateScore = () => {
+      let totalItems = 0;
+      let passedItems = 0;
+      formData.checklist_items.forEach(category => {
+        category.items.forEach(item => {
+          if (item.status !== 'na') {
+            totalItems++;
+            if (item.status === 'pass') passedItems++;
+          }
+        });
+      });
+      return totalItems > 0 ? Math.round((passedItems / totalItems) * 100) : 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        const newReport: QualitySafetyReport = {
+          id: Date.now().toString(),
+          project_id: formData.project_id,
+          project_title: formData.project_id === 'p1' ? 'Highway Construction Phase 1' :
+                        formData.project_id === 'p2' ? 'Urban Development Project' : 'Bridge Construction',
+          inspector_id: user?.id || '',
+          inspector_name: user?.name || '',
+          inspection_date: formData.inspection_date,
+          inspection_type: formData.inspection_type as any,
+          checklist_items: formData.checklist_items,
+          overall_score: calculateScore(),
+          critical_issues: formData.critical_issues.split('\n').filter(issue => issue.trim()),
+          recommendations: formData.recommendations.split('\n').filter(rec => rec.trim()),
+          photos: [],
+          status: calculateScore() >= 80 ? 'approved' : 'requires_action',
+          created_at: new Date().toISOString()
+        };
+
+        setQualitySafetyReports(prev => [...prev, newReport]);
+        setShowNewQSModal(false);
+      } catch (error) {
+        console.error('Error creating quality & safety report:', error);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">New Quality & Safety Inspection</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                <select
+                  value={formData.project_id}
+                  onChange={(e) => setFormData({...formData, project_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                >
+                  <option value="">Select Project</option>
+                  <option value="p1">Highway Construction Phase 1</option>
+                  <option value="p2">Urban Development Project</option>
+                  <option value="p3">Bridge Construction</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Date</label>
+                <input
+                  type="date"
+                  value={formData.inspection_date}
+                  onChange={(e) => setFormData({...formData, inspection_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Type</label>
+                <select
+                  value={formData.inspection_type}
+                  onChange={(e) => setFormData({...formData, inspection_type: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <option value="quality">Quality Only</option>
+                  <option value="safety">Safety Only</option>
+                  <option value="combined">Quality & Safety</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Checklist Items */}
+            <div className="space-y-6">
+              <h4 className="text-lg font-semibold text-gray-900">Inspection Checklist</h4>
+              {formData.checklist_items.map((category, categoryIndex) => (
+                <div key={categoryIndex} className="bg-gray-50 rounded-lg p-4">
+                  <h5 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    {category.category === 'Personal Protective Equipment' && <HardHat className="w-5 h-5" />}
+                    {category.category === 'Site Safety' && <Shield className="w-5 h-5" />}
+                    {category.category === 'Equipment Safety' && <Zap className="w-5 h-5" />}
+                    {category.category === 'Quality Control' && <CheckCircle className="w-5 h-5" />}
+                    {category.category}
+                  </h5>
+                  <div className="space-y-3">
+                    {category.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="bg-white rounded p-3 border">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm text-gray-800 mb-2">{item.description}</div>
+                            <div className="flex gap-4">
+                              {(['pass', 'fail', 'na'] as const).map(status => (
+                                <label key={status} className="flex items-center gap-2 text-sm">
+                                  <input
+                                    type="radio"
+                                    name={`item-${categoryIndex}-${itemIndex}`}
+                                    value={status}
+                                    checked={item.status === status}
+                                    onChange={(e) => updateChecklistItem(categoryIndex, itemIndex, 'status', e.target.value)}
+                                    className="w-4 h-4 text-green-600"
+                                  />
+                                  <span className={`capitalize ${
+                                    status === 'pass' ? 'text-green-600' :
+                                    status === 'fail' ? 'text-red-600' : 'text-gray-600'
+                                  }`}>
+                                    {status === 'na' ? 'N/A' : status}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="w-64">
+                            <input
+                              type="text"
+                              placeholder="Notes..."
+                              value={item.notes || ''}
+                              onChange={(e) => updateChecklistItem(categoryIndex, itemIndex, 'notes', e.target.value)}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Score Display */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-blue-800">Overall Score:</span>
+                <span className={`text-2xl font-bold ${
+                  calculateScore() >= 90 ? 'text-green-600' :
+                  calculateScore() >= 70 ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {calculateScore()}%
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Critical Issues (one per line)</label>
+                <textarea
+                  value={formData.critical_issues}
+                  onChange={(e) => setFormData({...formData, critical_issues: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  rows={4}
+                  placeholder="List any critical issues that require immediate attention..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Recommendations (one per line)</label>
+                <textarea
+                  value={formData.recommendations}
+                  onChange={(e) => setFormData({...formData, recommendations: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  rows={4}
+                  placeholder="Provide recommendations for improvements..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowNewQSModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Create Inspection Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="p-6">
