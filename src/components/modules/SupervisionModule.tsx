@@ -23,20 +23,31 @@ interface QualitySafetyReport {
   inspector_id: string;
   inspector_name: string;
   inspection_date: string;
-  inspection_type: 'quality' | 'safety' | 'combined';
+  inspection_type: 'structural_design' | 'quality' | 'safety' | 'combined';
+  document_number: string;
+  page_info: {
+    current: number;
+    total: number;
+  };
   checklist_items: {
-    category: string;
+    section_number: number;
+    section_title: string;
     items: {
-      description: string;
-      status: 'pass' | 'fail' | 'na';
-      notes?: string;
+      criteria: string;
+      checked: boolean;
+      not_required: boolean;
+      remark: string;
     }[];
   }[];
-  overall_score: number;
-  critical_issues: string[];
-  recommendations: string[];
-  photos: string[];
-  status: 'approved' | 'requires_action' | 'rejected';
+  checked_by: string;
+  checked_by_signature?: string;
+  checked_by_date?: string;
+  approved_by: string;
+  approved_by_signature?: string;
+  approved_by_date?: string;
+  assigned_to?: string;
+  assigned_to_name?: string;
+  status: 'draft' | 'assigned' | 'in_progress' | 'completed' | 'approved';
   created_at: string;
 }
 
