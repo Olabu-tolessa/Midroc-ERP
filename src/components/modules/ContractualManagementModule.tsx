@@ -1288,7 +1288,12 @@ const ContractualManagementModule: React.FC = () => {
     if (isAuthorized) {
       return true; // Admin/GM can see all forms
     }
-    
+
+    // Client users can only see forms assigned to them as client
+    if (user?.role === 'client') {
+      return form.client_assigned_to === user?.id;
+    }
+
     // Regular users can only see forms assigned to them
     return form.client_assigned_to === user?.id || form.contractor_assigned_to === user?.id;
   });
