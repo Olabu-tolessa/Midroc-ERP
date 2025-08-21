@@ -30,7 +30,6 @@ const modules = [
   { id: 'users', name: 'User Management', icon: Users },
   { id: 'hr', name: 'Human Resources', icon: Users },
   { id: 'finance', name: 'Finance', icon: DollarSign },
-  { id: 'bi', name: 'Business Intelligence', icon: BarChart3 },
   { id: 'qa', name: 'Quality & Safety', icon: Shield },
   { id: 'crm', name: 'Client Relations', icon: UserCheck },
 ];
