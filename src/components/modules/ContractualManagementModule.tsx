@@ -1091,99 +1091,196 @@ const ContractualManagementModule: React.FC = () => {
         </button>
       </div>
 
-      {/* Contract Forms List */}
-      <div className="space-y-4">
-        {filteredForms.map((form) => (
-          <div key={form.id} className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{form.title}</h3>
-                <div className="grid md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">Client:</span>
-                    <span className="font-medium">{form.client_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">Contractor:</span>
-                    <span className="font-medium">{form.contractor_name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">Date:</span>
-                    <span className="font-medium">{new Date(form.effective_date).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-600">
-                  Project: {form.project_name} | Location: {form.site_location}
-                </div>
-                
-                {/* Assignment Info */}
-                {form.status !== 'draft' && (
-                  <div className="mt-3 text-sm">
-                    <div className="flex gap-4">
-                      <span className="text-gray-600">
-                        Client Assigned: <span className="font-medium text-blue-600">{form.client_user_name || 'Not assigned'}</span>
-                      </span>
-                      <span className="text-gray-600">
-                        Contractor Assigned: <span className="font-medium text-green-600">{form.contractor_user_name || 'Not assigned'}</span>
-                      </span>
+      {/* Contracts List */}
+      {activeTab === 'contracts' && (
+        <div className="space-y-4">
+          {contracts.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg border">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Contracts</h3>
+              <p className="text-gray-600 mb-4">Create your first contract to get started.</p>
+              {isAuthorized && (
+                <button
+                  onClick={() => setShowCreateContractModal(true)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 mx-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Contract
+                </button>
+              )}
+            </div>
+          ) : (
+            contracts.map((contract) => (
+              <div key={contract.id} className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{contract.title}</h3>
+                    <div className="grid md:grid-cols-3 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Client:</span>
+                        <span className="font-medium">{contract.client_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Value:</span>
+                        <span className="font-medium">${contract.value.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Start:</span>
+                        <span className="font-medium">{new Date(contract.start_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-600">
+                      Type: {contract.contract_type.charAt(0).toUpperCase() + contract.contract_type.slice(1)} |
+                      End Date: {new Date(contract.end_date).toLocaleDateString()}
                     </div>
                   </div>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(form.status)}`}>
-                  {form.status.replace('_', ' ').charAt(0).toUpperCase() + form.status.replace('_', ' ').slice(1)}
-                </span>
-                
-                {/* Action Buttons */}
-                <div className="flex gap-1">
-                  {isAuthorized && form.status === 'draft' && (
-                    <button
-                      onClick={() => {
-                        setSelectedForm(form);
-                        setShowAssignModal(true);
-                      }}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                      title="Assign for Signing"
-                    >
-                      Assign
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={() => {
-                      setSelectedForm(form);
-                      setShowFormDetailsModal(true);
-                    }}
-                    className="p-2 text-gray-400 hover:text-blue-600"
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
 
-                  {isAuthorized && (
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
-                          setContractForms(prev => prev.filter(f => f.id !== form.id));
-                        }
-                      }}
-                      className="p-2 text-gray-400 hover:text-red-600"
-                      title="Delete Form"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      contract.status === 'active' ? 'bg-green-100 text-green-800' :
+                      contract.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                      contract.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {contract.status.replace('_', ' ').charAt(0).toUpperCase() + contract.status.replace('_', ' ').slice(1)}
+                    </span>
+
+                    {isAuthorized && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this contract? This action cannot be undone.')) {
+                            setContracts(prev => prev.filter(c => c.id !== contract.id));
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                        title="Delete Contract"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Contract Forms List */}
+      {activeTab === 'forms' && (
+        <div className="space-y-4">
+          {filteredForms.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg border">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Forms</h3>
+              <p className="text-gray-600 mb-4">Create your first form to get started.</p>
+              {isAuthorized && (
+                <button
+                  onClick={() => setShowNewFormModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Form
+                </button>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ) : (
+            filteredForms.map((form) => (
+              <div key={form.id} className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{form.title}</h3>
+                    <div className="grid md:grid-cols-3 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Client:</span>
+                        <span className="font-medium">{form.client_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Contractor:</span>
+                        <span className="font-medium">{form.contractor_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Date:</span>
+                        <span className="font-medium">{new Date(form.effective_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-600">
+                      Project: {form.project_name} | Location: {form.site_location}
+                    </div>
+
+                    {/* Assignment Info */}
+                    {form.status !== 'draft' && (
+                      <div className="mt-3 text-sm">
+                        <div className="flex gap-4">
+                          <span className="text-gray-600">
+                            Client Assigned: <span className="font-medium text-blue-600">{form.client_user_name || 'Not assigned'}</span>
+                          </span>
+                          <span className="text-gray-600">
+                            Contractor Assigned: <span className="font-medium text-green-600">{form.contractor_user_name || 'Not assigned'}</span>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(form.status)}`}>
+                      {form.status.replace('_', ' ').charAt(0).toUpperCase() + form.status.replace('_', ' ').slice(1)}
+                    </span>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-1">
+                      {isAuthorized && form.status === 'draft' && (
+                        <button
+                          onClick={() => {
+                            setSelectedForm(form);
+                            setShowAssignModal(true);
+                          }}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                          title="Assign for Signing"
+                        >
+                          Assign
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setSelectedForm(form);
+                          setShowFormDetailsModal(true);
+                        }}
+                        className="p-2 text-gray-400 hover:text-blue-600"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      {isAuthorized && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
+                              setContractForms(prev => prev.filter(f => f.id !== form.id));
+                            }
+                          }}
+                          className="p-2 text-gray-400 hover:text-red-600"
+                          title="Delete Form"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Modals */}
       {showCreateContractModal && <CreateContractModal />}
