@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
 
 interface ContractForm {
   id: string;
