@@ -82,10 +82,14 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-xl mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-32 h-20 bg-white rounded-xl mb-4 shadow-lg p-2">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa277c4669d86451fa82a2c1c19c543ba%2F7073ebd30eee4e56929e82612bb1ae92?format=webp&width=800"
+              alt="Midroc Investment Group"
+              className="h-full w-auto object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Join Midroc ERP</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Join MIDROC ERP</h1>
           <p className="text-green-100">Create your account to get started</p>
         </div>
 
