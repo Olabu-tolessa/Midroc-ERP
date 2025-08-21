@@ -283,8 +283,8 @@ const ContractualManagementModule: React.FC = () => {
                 required
               >
                 <option value="">Select Client User</option>
-                {mockUsers.filter(u => u.role === 'client' || u.role === 'project_manager').map(user => (
-                  <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                {allUsers.filter(u => u.role === 'client' || u.role === 'admin' || u.role === 'general_manager').map(user => (
+                  <option key={user.id} value={user.id}>{user.name} ({user.email}) - {user.role.replace('_', ' ')}</option>
                 ))}
               </select>
             </div>
@@ -298,8 +298,8 @@ const ContractualManagementModule: React.FC = () => {
                 required
               >
                 <option value="">Select Contractor User</option>
-                {mockUsers.filter(u => u.role === 'contractor' || u.role === 'project_manager').map(user => (
-                  <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                {allUsers.filter(u => u.role === 'contractor' || u.role === 'admin' || u.role === 'general_manager').map(user => (
+                  <option key={user.id} value={user.id}>{user.name} ({user.email}) - {user.role.replace('_', ' ')}</option>
                 ))}
               </select>
             </div>
