@@ -813,7 +813,10 @@ export const QualityAuditModule: React.FC = () => {
       <div className="space-y-4">
         {filteredTasks.map((task) => {
           const progress = getProgressPercentage(task.checkpoints);
-          const canEdit = isProjectManager || user?.id === task.assigned_to;
+          const canEdit = user?.role === 'admin' ||
+                          user?.role === 'general_manager' ||
+                          user?.role === 'project_manager' ||
+                          user?.id === task.assigned_to;
           
           return (
             <div key={task.id} className="bg-white rounded-lg shadow-sm border p-6">
