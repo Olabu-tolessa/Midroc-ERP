@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Building2, Lock, Mail, ArrowRight, UserPlus, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building2, Lock, Mail, ArrowRight, UserPlus, AlertCircle, Eye, EyeOff, Shield, Briefcase } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginPageProps {
@@ -10,7 +10,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isFormFocused, setIsFormFocused] = useState(false);
+  const [selectedDemo, setSelectedDemo] = useState('');
   const { login, loading } = useAuth();
+
+  const demoAccounts = [
+    { email: 'admin@midroc.com', role: 'Admin', access: 'Full Access', icon: Shield },
+    { email: 'gm@midroc.com', role: 'General Manager', access: 'Management Access', icon: Briefcase },
+    { email: 'pm@midroc.com', role: 'Project Manager', access: 'Project Access', icon: Building2 },
+    { email: 'consultant@midroc.com', role: 'Consultant', access: 'Consulting Access', icon: UserPlus },
+    { email: 'engineer@midroc.com', role: 'Engineer', access: 'Technical Access', icon: Building2 },
+    { email: 'client@midroc.com', role: 'Client', access: 'Project Tracking & Contract Signing', icon: Briefcase },
+    { email: 'contractor@midroc.com', role: 'Contractor', access: 'Project Execution & Contract Signing', icon: Building2 },
+    { email: 'employee@midroc.com', role: 'Employee', access: 'Limited Access', icon: UserPlus },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
