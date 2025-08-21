@@ -142,6 +142,7 @@ const ContractualManagementModule: React.FC = () => {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState<ContractForm | null>(null);
   const [activeTab, setActiveTab] = useState<'contracts' | 'forms'>('forms');
+  const [showCreateContractModal, setShowCreateContractModal] = useState(false);
   const [signingAs, setSigningAs] = useState<'client' | 'contractor'>('client');
 
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager';
