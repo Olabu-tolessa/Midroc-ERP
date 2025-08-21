@@ -68,17 +68,17 @@ const UserManagementModule: React.FC = () => {
 
   const handleApprove = async (userId: string) => {
     try {
-      const success = await approveUser(userId);
-      if (success) {
+      const result = await userService.approveUser(userId);
+      if (result.success) {
         setNotification({
           type: 'success',
-          message: 'User approved successfully! They can now log in with their credentials.'
+          message: result.message || 'User approved successfully!'
         });
-        loadPendingUsers(); // Refresh the list
+        loadAllUsers(); // Refresh the list
       } else {
         setNotification({
           type: 'error',
-          message: 'Failed to approve user. Please try again.'
+          message: result.message || 'Failed to approve user. Please try again.'
         });
       }
     } catch (error) {
@@ -88,23 +88,23 @@ const UserManagementModule: React.FC = () => {
         message: 'An error occurred while approving the user.'
       });
     }
-    
+
     setTimeout(() => setNotification(null), 3000);
   };
 
   const handleReject = async (userId: string) => {
     try {
-      const success = await rejectUser(userId);
-      if (success) {
+      const result = await userService.rejectUser(userId);
+      if (result.success) {
         setNotification({
           type: 'success',
-          message: 'User registration rejected.'
+          message: result.message || 'User registration rejected.'
         });
-        loadPendingUsers(); // Refresh the list
+        loadAllUsers(); // Refresh the list
       } else {
         setNotification({
           type: 'error',
-          message: 'Failed to reject user. Please try again.'
+          message: result.message || 'Failed to reject user. Please try again.'
         });
       }
     } catch (error) {
@@ -114,7 +114,37 @@ const UserManagementModule: React.FC = () => {
         message: 'An error occurred while rejecting the user.'
       });
     }
-    
+
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const result = await userService.deleteUser(userId);
+      if (result.success) {
+        setNotification({
+          type: 'success',
+          message: result.message || 'User deleted successfully.'
+        });
+        loadAllUsers(); // Refresh the list
+      } else {
+        setNotification({
+          type: 'error',
+          message: result.message || 'Failed to delete user. Please try again.'
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setNotification({
+        type: 'error',
+        message: 'An error occurred while deleting the user.'
+      });
+    }
+
     setTimeout(() => setNotification(null), 3000);
   };
 
