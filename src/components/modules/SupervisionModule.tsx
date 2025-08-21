@@ -1469,6 +1469,8 @@ const SupervisionModule: React.FC = () => {
 
       {showNewReportModal && <NewReportModal />}
       {showNewQSModal && <NewQualitySafetyModal />}
+      {showQSSignModal && <QSSignatureModal />}
+      {showQSAssignModal && <QSAssignmentModal />}
     </div>
   );
 };
