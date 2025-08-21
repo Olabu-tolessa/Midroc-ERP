@@ -1792,6 +1792,26 @@ const ContractualManagementModule: React.FC = () => {
                         <Eye className="w-4 h-4" />
                       </button>
 
+                      {/* Download Buttons for Fully Signed Contracts */}
+                      {isAuthorized && form.status === 'fully_signed' && (
+                        <>
+                          <button
+                            onClick={() => exportToPDF(form)}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                            title="Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => exportToDoc(form)}
+                            className="p-2 text-gray-400 hover:text-blue-600"
+                            title="Download DOC"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
                       {isAuthorized && (
                         <button
                           onClick={() => {
