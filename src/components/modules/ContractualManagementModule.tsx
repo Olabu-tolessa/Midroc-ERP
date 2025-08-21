@@ -310,6 +310,172 @@ const ContractualManagementModule: React.FC = () => {
     );
   };
 
+  const CreateContractModal = () => {
+    const [contractData, setContractData] = useState({
+      title: '',
+      client_name: '',
+      contract_type: 'construction',
+      value: '',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      status: 'draft'
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+
+      const newContract: Contract = {
+        id: Date.now().toString(),
+        title: contractData.title,
+        client_name: contractData.client_name,
+        contract_type: contractData.contract_type as any,
+        value: parseFloat(contractData.value) || 0,
+        start_date: contractData.start_date,
+        end_date: contractData.end_date,
+        status: contractData.status as any,
+        approval_status: 'pending',
+        compliance_checks: {
+          legal_review: false,
+          financial_review: false,
+          technical_review: false
+        },
+        milestones: [],
+        created_at: new Date().toISOString()
+      };
+
+      setContracts(prev => [...prev, newContract]);
+      setShowCreateContractModal(false);
+
+      // Reset form
+      setContractData({
+        title: '',
+        client_name: '',
+        contract_type: 'construction',
+        value: '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: '',
+        status: 'draft'
+      });
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-2xl">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Create New Contract</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contract Title</label>
+              <input
+                type="text"
+                value={contractData.title}
+                onChange={(e) => setContractData({...contractData, title: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+                placeholder="Enter contract title"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                <input
+                  type="text"
+                  value={contractData.client_name}
+                  onChange={(e) => setContractData({...contractData, client_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                  placeholder="Enter client name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
+                <select
+                  value={contractData.contract_type}
+                  onChange={(e) => setContractData({...contractData, contract_type: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                >
+                  <option value="construction">Construction</option>
+                  <option value="consulting">Consulting</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="supply">Supply</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contract Value ($)</label>
+                <input
+                  type="number"
+                  value={contractData.value}
+                  onChange={(e) => setContractData({...contractData, value: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={contractData.status}
+                  onChange={(e) => setContractData({...contractData, status: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                >
+                  <option value="draft">Draft</option>
+                  <option value="active">Active</option>
+                  <option value="pending_approval">Pending Approval</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={contractData.start_date}
+                  onChange={(e) => setContractData({...contractData, start_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <input
+                  type="date"
+                  value={contractData.end_date}
+                  onChange={(e) => setContractData({...contractData, end_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowCreateContractModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Create Contract
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   const CreateFormModal = () => {
     const [formData, setFormData] = useState({
       template_type: 'document_acquisition',
