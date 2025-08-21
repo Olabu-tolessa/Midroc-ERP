@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Eye, Edit, Trash2, Download, Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Search, Filter, Eye, Edit, Trash2, Download, Calendar, AlertTriangle, CheckCircle, Clock, Shield, HardHat, FileText, Users, MapPin, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
@@ -16,18 +16,46 @@ interface SupervisionReport {
   created_at: string;
 }
 
+interface QualitySafetyReport {
+  id: string;
+  project_id: string;
+  project_title: string;
+  inspector_id: string;
+  inspector_name: string;
+  inspection_date: string;
+  inspection_type: 'quality' | 'safety' | 'combined';
+  checklist_items: {
+    category: string;
+    items: {
+      description: string;
+      status: 'pass' | 'fail' | 'na';
+      notes?: string;
+    }[];
+  }[];
+  overall_score: number;
+  critical_issues: string[];
+  recommendations: string[];
+  photos: string[];
+  status: 'approved' | 'requires_action' | 'rejected';
+  created_at: string;
+}
+
 const SupervisionModule: React.FC = () => {
   const { user } = useAuth();
   const [reports, setReports] = useState<SupervisionReport[]>([]);
+  const [qualitySafetyReports, setQualitySafetyReports] = useState<QualitySafetyReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewReportModal, setShowNewReportModal] = useState(false);
+  const [showNewQSModal, setShowNewQSModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'supervision' | 'quality_safety'>('supervision');
 
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager' || user?.role === 'project_manager';
 
   useEffect(() => {
     loadReports();
+    loadQualitySafetyReports();
   }, []);
 
   const loadReports = async () => {
@@ -77,6 +105,91 @@ const SupervisionModule: React.FC = () => {
       console.error('Error loading supervision reports:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadQualitySafetyReports = async () => {
+    try {
+      // Mock data for Quality & Safety reports
+      const mockQSReports: QualitySafetyReport[] = [
+        {
+          id: 'qs1',
+          project_id: 'p1',
+          project_title: 'Highway Construction Phase 1',
+          inspector_id: '5',
+          inspector_name: 'David Chen',
+          inspection_date: '2024-01-15',
+          inspection_type: 'combined',
+          checklist_items: [
+            {
+              category: 'Personal Protective Equipment',
+              items: [
+                { description: 'Hard hats worn by all personnel', status: 'pass' },
+                { description: 'Safety vests visible and clean', status: 'pass' },
+                { description: 'Steel-toed boots worn', status: 'fail', notes: 'Two workers wearing regular shoes' }
+              ]
+            },
+            {
+              category: 'Site Safety',
+              items: [
+                { description: 'Proper barriers around excavation', status: 'pass' },
+                { description: 'Emergency exits clearly marked', status: 'pass' },
+                { description: 'First aid station accessible', status: 'pass' }
+              ]
+            },
+            {
+              category: 'Quality Control',
+              items: [
+                { description: 'Material quality meets specifications', status: 'pass' },
+                { description: 'Workmanship according to standards', status: 'pass' },
+                { description: 'Measurements within tolerance', status: 'fail', notes: 'Foundation depth 5cm short' }
+              ]
+            }
+          ],
+          overall_score: 75,
+          critical_issues: ['Foundation depth below specification', 'PPE compliance issue'],
+          recommendations: ['Immediate correction of foundation depth', 'Mandatory PPE training for all workers'],
+          photos: [],
+          status: 'requires_action',
+          created_at: '2024-01-15T10:00:00Z'
+        },
+        {
+          id: 'qs2',
+          project_id: 'p2',
+          project_title: 'Urban Development Project',
+          inspector_id: '5',
+          inspector_name: 'David Chen',
+          inspection_date: '2024-01-14',
+          inspection_type: 'safety',
+          checklist_items: [
+            {
+              category: 'Personal Protective Equipment',
+              items: [
+                { description: 'Hard hats worn by all personnel', status: 'pass' },
+                { description: 'Safety vests visible and clean', status: 'pass' },
+                { description: 'Steel-toed boots worn', status: 'pass' }
+              ]
+            },
+            {
+              category: 'Equipment Safety',
+              items: [
+                { description: 'Machinery properly maintained', status: 'pass' },
+                { description: 'Safety guards in place', status: 'pass' },
+                { description: 'Emergency stop buttons functional', status: 'pass' }
+              ]
+            }
+          ],
+          overall_score: 95,
+          critical_issues: [],
+          recommendations: ['Continue current safety practices'],
+          photos: [],
+          status: 'approved',
+          created_at: '2024-01-14T14:30:00Z'
+        }
+      ];
+      setQualitySafetyReports(mockQSReports);
+    } catch (error) {
+      console.error('Error loading quality & safety reports:', error);
     }
   };
 
