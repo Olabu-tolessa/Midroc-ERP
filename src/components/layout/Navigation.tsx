@@ -104,7 +104,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         <div className="space-y-1">
           {modules.filter(module => canAccessModule(module.id)).map((module) => {
             const Icon = module.icon;
