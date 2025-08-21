@@ -169,13 +169,26 @@ const UserManagementModule: React.FC = () => {
       }
 
       try {
-        // Here you would normally create the user via API
-        // For now, we'll simulate success
+        // Create the user directly (simulating real user creation)
+        const newUser = {
+          id: Date.now().toString(),
+          name: formData.name,
+          email: formData.email,
+          role: formData.role as any,
+          department: formData.department
+        };
+
+        // Add to mockUsers array in AuthContext (this would be a real API call)
+        // For now, we'll store in localStorage to simulate persistence
+        const existingUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+        const updatedUsers = [...existingUsers, newUser];
+        localStorage.setItem('erp_created_users', JSON.stringify(updatedUsers));
+
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         setNotification({
           type: 'success',
-          message: `User "${formData.name}" created successfully! Login credentials have been sent to ${formData.email}.`
+          message: `User "${formData.name}" created successfully! They can now log in with email: ${formData.email} and password: ${formData.password}`
         });
 
         setShowCreateUserModal(false);
@@ -189,7 +202,7 @@ const UserManagementModule: React.FC = () => {
         });
         setErrors({});
 
-        setTimeout(() => setNotification(null), 5000);
+        setTimeout(() => setNotification(null), 7000);
       } catch (error) {
         setNotification({
           type: 'error',
