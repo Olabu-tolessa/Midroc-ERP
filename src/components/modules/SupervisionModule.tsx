@@ -428,12 +428,13 @@ const SupervisionModule: React.FC = () => {
           inspector_name: user?.name || '',
           inspection_date: formData.inspection_date,
           inspection_type: formData.inspection_type as any,
+          document_number: formData.document_number,
+          page_info: formData.page_info,
           checklist_items: formData.checklist_items,
-          overall_score: calculateScore(),
-          critical_issues: formData.critical_issues.split('\n').filter(issue => issue.trim()),
-          recommendations: formData.recommendations.split('\n').filter(rec => rec.trim()),
-          photos: [],
-          status: calculateScore() >= 80 ? 'approved' : 'requires_action',
+          checked_by: formData.checked_by,
+          approved_by: formData.approved_by,
+          assigned_to: formData.assigned_to,
+          status: formData.assigned_to ? 'assigned' : 'draft',
           created_at: new Date().toISOString()
         };
 
