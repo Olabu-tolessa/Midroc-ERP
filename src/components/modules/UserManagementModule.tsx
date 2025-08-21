@@ -355,6 +355,7 @@ const UserManagementModule: React.FC = () => {
                 <option value="engineer">Engineer</option>
                 <option value="consultant">Consultant</option>
                 <option value="client">Client</option>
+                <option value="contractor">Contractor</option>
                 <option value="project_manager">Project Manager</option>
                 <option value="general_manager">General Manager</option>
                 <option value="admin">Admin</option>
