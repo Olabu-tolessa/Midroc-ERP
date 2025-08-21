@@ -697,6 +697,186 @@ const SupervisionModule: React.FC = () => {
     );
   };
 
+  const QSSignatureModal = () => {
+    const sigCanvas = useRef<SignatureCanvas>(null);
+
+    const clearSignature = () => {
+      sigCanvas.current?.clear();
+    };
+
+    const saveSignature = () => {
+      if (!selectedQSReport) return;
+
+      const signatureData = sigCanvas.current?.toDataURL();
+      if (!signatureData) return;
+
+      const updatedReport = {
+        ...selectedQSReport,
+        ...(signingAs === 'checker' ? {
+          checked_by_signature: signatureData,
+          checked_by_date: new Date().toISOString(),
+          status: selectedQSReport.approved_by_signature ? 'approved' : 'completed'
+        } : {
+          approved_by_signature: signatureData,
+          approved_by_date: new Date().toISOString(),
+          status: 'approved'
+        })
+      };
+
+      setQualitySafetyReports(prev => prev.map(report =>
+        report.id === selectedQSReport.id ? updatedReport as QualitySafetyReport : report
+      ));
+
+      setShowQSSignModal(false);
+      setSelectedQSReport(null);
+    };
+
+    if (!selectedQSReport) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            Digital Signature - {signingAs === 'checker' ? 'Checked by' : 'Approved by'}
+          </h3>
+
+          <div className="space-y-4">
+            <div className="border-2 border-gray-300 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2">Sign below:</p>
+              <div className="border border-gray-200 rounded">
+                <SignatureCanvas
+                  ref={sigCanvas}
+                  canvasProps={{
+                    width: 400,
+                    height: 200,
+                    className: 'signature-canvas w-full'
+                  }}
+                  backgroundColor="white"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between gap-3">
+              <button
+                onClick={clearSignature}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Clear
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowQSSignModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveSignature}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Save Signature
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const QSAssignmentModal = () => {
+    const [assignTo, setAssignTo] = useState('');
+
+    const getAvailableUsers = () => {
+      const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+      const mockUsers = [
+        { id: '1', name: 'John Anderson', email: 'admin@midroc.com', role: 'admin' },
+        { id: '2', name: 'Sarah Mitchell', email: 'gm@midroc.com', role: 'general_manager' },
+        { id: '3', name: 'Michael Rodriguez', email: 'pm@midroc.com', role: 'project_manager' },
+        { id: '4', name: 'Emma Thompson', email: 'consultant@midroc.com', role: 'consultant' },
+        { id: '5', name: 'David Chen', email: 'engineer@midroc.com', role: 'engineer' }
+      ];
+      return [...mockUsers, ...createdUsers].filter(u => u.role === 'engineer' || u.role === 'project_manager');
+    };
+
+    const handleAssign = () => {
+      if (!selectedQSReport || !assignTo) return;
+
+      const assignedUser = getAvailableUsers().find(u => u.id === assignTo);
+      const updatedReport = {
+        ...selectedQSReport,
+        assigned_to: assignTo,
+        assigned_to_name: assignedUser?.name || '',
+        status: 'assigned' as const
+      };
+
+      setQualitySafetyReports(prev => prev.map(report =>
+        report.id === selectedQSReport.id ? updatedReport : report
+      ));
+
+      setShowQSAssignModal(false);
+      setSelectedQSReport(null);
+      setAssignTo('');
+    };
+
+    if (!selectedQSReport) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Assign Checklist to Engineer</h3>
+
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                <strong>Checklist:</strong> {selectedQSReport.project_title} - {selectedQSReport.document_number}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign to Engineer</label>
+              <select
+                value={assignTo}
+                onChange={(e) => setAssignTo(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              >
+                <option value="">Select Engineer</option>
+                {getAvailableUsers().map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name} ({user.role.replace('_', ' ')}) - {user.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-700">
+                The assigned engineer will be able to complete the checklist and submit it for approval.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={() => setShowQSAssignModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAssign}
+              disabled={!assignTo}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign Checklist
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="p-6">
