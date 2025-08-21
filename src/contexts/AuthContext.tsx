@@ -104,7 +104,6 @@ const MODULE_ACCESS = {
   users: ['admin'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
-  bi: ['admin', 'general_manager', 'project_manager'],
   qa: ['admin', 'general_manager', 'project_manager', 'engineer'],
   crm: ['admin', 'general_manager', 'consultant']
 };
