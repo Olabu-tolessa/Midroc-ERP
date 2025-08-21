@@ -82,7 +82,7 @@ const FORM_TEMPLATES = {
       site_location: '',
       client: '',
       contractor: '',
-      consultant: '',
+      consultant: 'Gobalaffo Consulting Architects & Engineers P.L.C',
       site_conditions: {
         surface_soil: '',
         surface_water: '',
@@ -108,7 +108,10 @@ const FORM_TEMPLATES = {
         electric_connection_points: '',
         sewer_drainage_connection_points: ''
       },
-      additional_items: ''
+      additional_items: '',
+      inspection_note: 'Following an inspection of the site as per the above listed items the contractor is hereby advised to take over the site and precede with the subsequent mobilization, site preparation and the construction work as per the contract agreement and the respective schedule.',
+      supervisor_name: '',
+      contractors_name: ''
     }
   },
   site_handover: {
