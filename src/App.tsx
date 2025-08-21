@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
@@ -8,7 +8,6 @@ import DashboardModule from './components/modules/DashboardModule';
 import { ProjectManagementModule } from './components/modules/ProjectManagementModule';
 import { HRModule } from './components/modules/HRModule';
 import { FinanceModule } from './components/modules/FinanceModule';
-import { BusinessIntelligenceModule } from './components/modules/BusinessIntelligenceModule';
 import { QualityAuditModule } from './components/modules/QualityAuditModule';
 import { CRMModule } from './components/modules/CRMModule';
 import SupervisionModule from './components/modules/SupervisionModule';
@@ -22,6 +21,21 @@ const AppContent: React.FC = () => {
   const [currentModule, setCurrentModule] = useState('dashboard');
   const [pendingApprovalEmail, setPendingApprovalEmail] = useState<string | null>(null);
   const [showPendingApproval, setShowPendingApproval] = useState(false);
+
+  // Handle hash-based navigation for quick actions
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash && ['dashboard', 'projects', 'users', 'contracts', 'hr', 'finance', 'qa', 'crm', 'supervision', 'consulting'].includes(hash)) {
+        setCurrentModule(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Check initial hash
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   if (loading) {
     return (
@@ -83,8 +97,6 @@ const AppContent: React.FC = () => {
         return <HRModule />;
       case 'finance':
         return <FinanceModule />;
-      case 'bi':
-        return <BusinessIntelligenceModule />;
       case 'qa':
         return <QualityAuditModule />;
       case 'crm':

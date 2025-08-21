@@ -30,7 +30,6 @@ const modules = [
   { id: 'users', name: 'User Management', icon: Users },
   { id: 'hr', name: 'Human Resources', icon: Users },
   { id: 'finance', name: 'Finance', icon: DollarSign },
-  { id: 'bi', name: 'Business Intelligence', icon: BarChart3 },
   { id: 'qa', name: 'Quality & Safety', icon: Shield },
   { id: 'crm', name: 'Client Relations', icon: UserCheck },
 ];
@@ -105,7 +104,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentModule, onModuleC
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         <div className="space-y-1">
           {modules.filter(module => canAccessModule(module.id)).map((module) => {
             const Icon = module.icon;

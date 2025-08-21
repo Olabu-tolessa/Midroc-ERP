@@ -405,21 +405,38 @@ const DashboardModule: React.FC = () => {
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-center transition-colors">
-              <HardHat className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-900">New Project</p>
+            <button
+              onClick={() => window.location.hash = '#projects'}
+              className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-center transition-colors group"
+            >
+              <HardHat className="w-8 h-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <p className="text-sm font-medium text-gray-900">View Projects</p>
             </button>
-            <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-center transition-colors">
-              <FileText className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <button
+              onClick={() => {
+                const pdf = document.createElement('a');
+                pdf.href = 'data:text/plain;charset=utf-8,Dashboard Report - ' + new Date().toISOString();
+                pdf.download = 'dashboard-report.txt';
+                pdf.click();
+              }}
+              className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-center transition-colors group"
+            >
+              <FileText className="w-8 h-8 text-blue-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
               <p className="text-sm font-medium text-gray-900">Generate Report</p>
             </button>
-            <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-center transition-colors">
-              <Users className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-900">Manage Team</p>
+            <button
+              onClick={() => window.location.hash = '#users'}
+              className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-center transition-colors group"
+            >
+              <Users className="w-8 h-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <p className="text-sm font-medium text-gray-900">Manage Users</p>
             </button>
-            <button className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg text-center transition-colors">
-              <BarChart3 className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-900">View Analytics</p>
+            <button
+              onClick={() => loadDashboardData()}
+              className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg text-center transition-colors group"
+            >
+              <BarChart3 className="w-8 h-8 text-orange-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <p className="text-sm font-medium text-gray-900">Refresh Data</p>
             </button>
           </div>
         </div>

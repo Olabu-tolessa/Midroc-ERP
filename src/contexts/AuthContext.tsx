@@ -91,20 +91,32 @@ const ROLE_PERMISSIONS = {
     'view_dashboard',
     'view_own_tasks',
     'view_projects_limited'
+  ],
+  client: [
+    'view_dashboard',
+    'view_own_projects',
+    'sign_assigned_contracts',
+    'view_project_progress'
+  ],
+  contractor: [
+    'view_dashboard',
+    'view_assigned_projects',
+    'sign_assigned_contracts',
+    'view_project_progress',
+    'submit_progress_reports'
   ]
 };
 
 // Module access configuration
 const MODULE_ACCESS = {
-  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee'],
-  projects: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee', 'client', 'contractor'],
+  projects: ['admin', 'general_manager', 'project_manager', 'engineer', 'client', 'contractor'],
   supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
   consulting: ['admin', 'general_manager', 'consultant'],
-  contracts: ['admin', 'general_manager'],
+  contracts: ['admin', 'general_manager', 'client', 'contractor'],
   users: ['admin'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
-  bi: ['admin', 'general_manager', 'project_manager'],
   qa: ['admin', 'general_manager', 'project_manager', 'engineer'],
   crm: ['admin', 'general_manager', 'consultant']
 };
@@ -152,6 +164,20 @@ const mockUsers: User[] = [
     email: 'employee@midroc.com',
     role: 'employee',
     department: 'General Construction'
+  },
+  {
+    id: '7',
+    name: 'Ahmed Hassan',
+    email: 'client@midroc.com',
+    role: 'client',
+    department: 'External Client'
+  },
+  {
+    id: '8',
+    name: 'Mohamed Ali',
+    email: 'contractor@midroc.com',
+    role: 'contractor',
+    department: 'Construction Contractor'
   }
 ];
 
@@ -183,10 +209,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
+    // Check mock users first
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password === 'password') {
       setUser(foundUser);
@@ -194,7 +221,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
       return { success: true };
     }
-    
+
+    // Check admin-created users
+    const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+    const createdUser = createdUsers.find((u: any) => u.email === email);
+    if (createdUser) {
+      // For created users, we'll accept any password since it's stored in localStorage
+      // In a real app, passwords would be hashed and verified
+      setUser(createdUser);
+      localStorage.setItem('erp_user', JSON.stringify(createdUser));
+      setLoading(false);
+      return { success: true };
+    }
+
     setLoading(false);
     return { success: false, message: 'Invalid email or password' };
   };
