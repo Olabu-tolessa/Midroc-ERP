@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
 
 interface ContractForm {
   id: string;
@@ -802,10 +804,10 @@ const ContractualManagementModule: React.FC = () => {
         useCORS: true,
         allowTaint: true
       });
-      
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
@@ -818,6 +820,149 @@ const ContractualManagementModule: React.FC = () => {
       pdf.save(`${form.title.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
+    }
+  };
+
+  const exportToDoc = async (form: ContractForm) => {
+    try {
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: form.title,
+                  bold: true,
+                  size: 32,
+                })
+              ],
+              alignment: AlignmentType.CENTER,
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            new Table({
+              width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+              },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Project:", bold: true })] })],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.project_name })] })],
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Site Location:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.site_location })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Client:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.client_name })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Contractor:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.contractor_name })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Effective Date:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: form.effective_date })] })],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Signature Status:",
+                  bold: true,
+                  size: 24,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Client Signature: ${form.client_signature ? '✓ Signed' : '✗ Pending'}`,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Contractor Signature: ${form.contractor_signature ? '✓ Signed' : '✗ Pending'}`,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Contract Status: ${form.status === 'fully_signed' ? 'Fully Executed' : 'Pending Signatures'}`,
+                  bold: true,
+                })
+              ],
+            }),
+            ...(form.client_signed_at ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Client signed on: ${new Date(form.client_signed_at).toLocaleString()}`,
+                  })
+                ],
+              })
+            ] : []),
+            ...(form.contractor_signed_at ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Contractor signed on: ${new Date(form.contractor_signed_at).toLocaleString()}`,
+                  })
+                ],
+              })
+            ] : []),
+          ],
+        }],
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      saveAs(blob, `${form.title.replace(/\s+/g, '_')}.docx`);
+    } catch (error) {
+      console.error('Error generating DOC:', error);
     }
   };
 
@@ -1332,13 +1477,28 @@ const ContractualManagementModule: React.FC = () => {
                 {/* Export and Close Actions */}
                 <div className="flex gap-2">
                   {isAuthorized && selectedForm.status === 'fully_signed' && (
-                    <button
-                      onClick={() => exportToPDF(selectedForm)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
-                    >
+                    <>
+                      <button
+                        onClick={() => exportToPDF(selectedForm)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export PDF
+                      </button>
+                      <button
+                        onClick={() => exportToDoc(selectedForm)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export DOC
+                      </button>
+                    </>
+                  )}
+                  {isAuthorized && selectedForm.status !== 'fully_signed' && selectedForm.status !== 'draft' && (
+                    <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm flex items-center gap-2">
                       <Download className="w-4 h-4" />
-                      Export PDF
-                    </button>
+                      Download available after both parties sign
+                    </div>
                   )}
                   <button
                     onClick={() => setShowFormDetailsModal(false)}
@@ -1631,6 +1791,26 @@ const ContractualManagementModule: React.FC = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+
+                      {/* Download Buttons for Fully Signed Contracts */}
+                      {isAuthorized && form.status === 'fully_signed' && (
+                        <>
+                          <button
+                            onClick={() => exportToPDF(form)}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                            title="Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => exportToDoc(form)}
+                            className="p-2 text-gray-400 hover:text-blue-600"
+                            title="Download DOC"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
 
                       {isAuthorized && (
                         <button

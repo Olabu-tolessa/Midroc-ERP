@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface PendingUser {
   id: string;
@@ -209,6 +210,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     setLoading(true);
+
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured) {
+      console.warn('Using mock authentication - Supabase not configured');
+    }
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
