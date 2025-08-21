@@ -1477,13 +1477,28 @@ const ContractualManagementModule: React.FC = () => {
                 {/* Export and Close Actions */}
                 <div className="flex gap-2">
                   {isAuthorized && selectedForm.status === 'fully_signed' && (
-                    <button
-                      onClick={() => exportToPDF(selectedForm)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
-                    >
+                    <>
+                      <button
+                        onClick={() => exportToPDF(selectedForm)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export PDF
+                      </button>
+                      <button
+                        onClick={() => exportToDoc(selectedForm)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export DOC
+                      </button>
+                    </>
+                  )}
+                  {isAuthorized && selectedForm.status !== 'fully_signed' && selectedForm.status !== 'draft' && (
+                    <div className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm flex items-center gap-2">
                       <Download className="w-4 h-4" />
-                      Export PDF
-                    </button>
+                      Download available after both parties sign
+                    </div>
                   )}
                   <button
                     onClick={() => setShowFormDetailsModal(false)}
