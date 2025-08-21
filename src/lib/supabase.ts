@@ -1,21 +1,27 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Check if we have real Supabase credentials
-export const isSupabaseConfigured = supabaseUrl !== 'https://placeholder-project.supabase.co' &&
-                                   supabaseKey !== 'placeholder-anon-key' &&
-                                   supabaseUrl.includes('supabase.co')
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseKey && supabaseUrl.includes('supabase.co'))
 
-// Create Supabase client with fallback configuration
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: isSupabaseConfigured,
-    detectSessionInUrl: isSupabaseConfigured
-  }
-})
+// Create Supabase client only if configured, otherwise create a mock client
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
+  : createClient('https://example.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MjQ3ODc3NCwiZXhwIjoxOTU4MDU0Nzc0fQ.example', {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    })
 
 // Database schemas
 export interface Database {
