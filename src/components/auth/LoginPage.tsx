@@ -41,6 +41,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
     }
   };
 
+  const handleDemoSelect = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('password');
+    setSelectedDemo(demoEmail);
+    setError('');
+  };
+
+  const handleQuickLogin = async (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('password');
+    setSelectedDemo(demoEmail);
+    setError('');
+
+    const result = await login(demoEmail, 'password');
+    if (!result.success) {
+      setError(result.message || 'Login failed');
+    }
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center px-4 relative"
