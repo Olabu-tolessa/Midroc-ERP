@@ -697,13 +697,20 @@ const ContractualManagementModule: React.FC = () => {
         } : {
           contractor_signature: signatureData,
           contractor_signed_at: new Date().toISOString(),
-          status: selectedForm.client_signature ? 'fully_signed' : 'pending_signatures'
+          status: selectedForm.client_signature ? 'fully_signed' : 'contractor_signed'
         })
       };
 
-      setContractForms(prev => prev.map(form => 
+      setContractForms(prev => prev.map(form =>
         form.id === selectedForm.id ? updatedForm as ContractForm : form
       ));
+
+      // Show immediate notification for successful signing
+      setNotification({
+        type: 'success',
+        message: `Contract signed successfully as ${signingAs}! ${updatedForm.status === 'fully_signed' ? 'Contract is now fully executed.' : 'Waiting for other party to sign.'}`
+      });
+      setTimeout(() => setNotification(null), 4000);
 
       setShowSigningModal(false);
       setSelectedForm(updatedForm as ContractForm);
