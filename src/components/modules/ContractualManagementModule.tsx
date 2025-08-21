@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, FileText, Calendar, CheckCircle, Clock, AlertTriangle, Eye, Edit, Trash2, Download, Users, PenTool, UserPlus } from 'lucide-react';
+import { Plus, Search, FileText, Calendar, CheckCircle, Clock, AlertTriangle, Eye, Edit, Trash2, Download, Users, PenTool, UserPlus, DollarSign } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
