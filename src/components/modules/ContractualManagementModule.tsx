@@ -1186,6 +1186,7 @@ const ContractualManagementModule: React.FC = () => {
       </div>
 
       {/* Modals */}
+      {showCreateContractModal && <CreateContractModal />}
       {showNewFormModal && <CreateFormModal />}
       {showFormDetailsModal && <FormDetailsModal />}
       {showSigningModal && <SigningModal />}
