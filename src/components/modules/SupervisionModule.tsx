@@ -870,29 +870,31 @@ const SupervisionModule: React.FC = () => {
                       {new Date(report.inspection_date).toLocaleDateString()}
                     </span>
                     <span>Inspector: {report.inspector_name}</span>
-                    <span className="capitalize flex items-center gap-1">
-                      {report.inspection_type === 'quality' && <CheckCircle className="w-4 h-4" />}
-                      {report.inspection_type === 'safety' && <Shield className="w-4 h-4" />}
-                      {report.inspection_type === 'combined' && <HardHat className="w-4 h-4" />}
-                      {report.inspection_type.replace('_', ' & ')}
+                    <span className="flex items-center gap-1">
+                      <FileText className="w-4 h-4" />
+                      {report.document_number}
                     </span>
+                    {report.assigned_to_name && (
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        Assigned to: {report.assigned_to_name}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    report.overall_score >= 90 ? 'bg-green-100 text-green-800' :
-                    report.overall_score >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {report.overall_score}% Score
-                  </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
                     report.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    report.status === 'requires_action' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                    report.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                    report.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                    report.status === 'assigned' ? 'bg-orange-100 text-orange-800' :
+                    'bg-gray-100 text-gray-800'
                   }`}>
                     {report.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                    {report.status === 'requires_action' && <AlertTriangle className="w-3 h-3" />}
-                    {report.status === 'rejected' && <AlertTriangle className="w-3 h-3" />}
+                    {report.status === 'completed' && <Clock className="w-3 h-3" />}
+                    {report.status === 'in_progress' && <AlertTriangle className="w-3 h-3" />}
+                    {report.status === 'assigned' && <Users className="w-3 h-3" />}
+                    {report.status === 'draft' && <Edit className="w-3 h-3" />}
                     {report.status.replace('_', ' ').charAt(0).toUpperCase() + report.status.replace('_', ' ').slice(1)}
                   </span>
                 </div>
@@ -900,23 +902,20 @@ const SupervisionModule: React.FC = () => {
 
               {/* Checklist Summary */}
               <div className="mb-4">
-                <h4 className="font-medium text-gray-900 mb-3">Inspection Summary</h4>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {report.checklist_items.map((category, index) => {
-                    const passCount = category.items.filter(item => item.status === 'pass').length;
-                    const totalCount = category.items.filter(item => item.status !== 'na').length;
-                    const score = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
+                <h4 className="font-medium text-gray-900 mb-3">Checklist Sections</h4>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {report.checklist_items.map((section, index) => {
+                    const checkedCount = section.items.filter(item => item.checked || item.not_required).length;
+                    const totalCount = section.items.length;
+                    const score = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
                     return (
                       <div key={index} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
-                          {category.category === 'Personal Protective Equipment' && <HardHat className="w-4 h-4" />}
-                          {category.category === 'Site Safety' && <Shield className="w-4 h-4" />}
-                          {category.category === 'Equipment Safety' && <Zap className="w-4 h-4" />}
-                          {category.category === 'Quality Control' && <CheckCircle className="w-4 h-4" />}
-                          <span className="font-medium text-sm">{category.category}</span>
+                          <span className="font-bold text-sm text-blue-600">{section.section_number}.</span>
+                          <span className="font-medium text-sm">{section.section_title}</span>
                         </div>
-                        <div className="text-xs text-gray-600">{passCount}/{totalCount} items</div>
+                        <div className="text-xs text-gray-600">{checkedCount}/{totalCount} items completed</div>
                         <div className={`text-sm font-medium ${
                           score >= 90 ? 'text-green-600' :
                           score >= 70 ? 'text-yellow-600' : 'text-red-600'
@@ -929,60 +928,76 @@ const SupervisionModule: React.FC = () => {
                 </div>
               </div>
 
-              {/* Critical Issues & Recommendations */}
-              {(report.critical_issues.length > 0 || report.recommendations.length > 0) && (
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  {report.critical_issues.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-red-800 mb-2 flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4" />
-                        Critical Issues
-                      </h4>
-                      <ul className="text-sm text-red-700 space-y-1">
-                        {report.critical_issues.map((issue, index) => (
-                          <li key={index} className="flex items-start gap-1">
-                            <span className="text-red-500 mt-1">•</span>
-                            {issue}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+              {/* Signature Status */}
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-900 mb-2">Signature Status</h4>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${report.checked_by_signature ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span>Checked by: {report.checked_by}</span>
+                    {report.checked_by_date && (
+                      <span className="text-gray-500">({new Date(report.checked_by_date).toLocaleDateString()})</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${report.approved_by_signature ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span>Approved by: {report.approved_by}</span>
+                    {report.approved_by_date && (
+                      <span className="text-gray-500">({new Date(report.approved_by_date).toLocaleDateString()})</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-4 border-t">
+                <div className="flex gap-2">
+                  {isAuthorized && report.status === 'draft' && (
+                    <button
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                      title="Assign to Engineer"
+                    >
+                      Assign
+                    </button>
                   )}
-                  {report.recommendations.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
-                        Recommendations
-                      </h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        {report.recommendations.map((rec, index) => (
-                          <li key={index} className="flex items-start gap-1">
-                            <span className="text-blue-500 mt-1">•</span>
-                            {rec}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {report.status === 'assigned' && report.assigned_to === user?.id && (
+                    <button
+                      className="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700"
+                      title="Start Checklist"
+                    >
+                      Start
+                    </button>
+                  )}
+                  {(report.status === 'in_progress' || report.status === 'completed') && (
+                    <button
+                      className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                      title="Sign Checklist"
+                    >
+                      Sign
+                    </button>
                   )}
                 </div>
-              )}
 
-              {isAuthorized && (
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <button className="p-2 text-gray-400 hover:text-gray-600">
+                <div className="flex gap-2">
+                  <button className="p-2 text-gray-400 hover:text-gray-600" title="View Details">
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-red-600">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-green-600">
-                    <Download className="w-4 h-4" />
-                  </button>
+                  {isAuthorized && report.status === 'approved' && (
+                    <>
+                      <button className="p-2 text-gray-400 hover:text-red-600" title="Download PDF">
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-gray-400 hover:text-blue-600" title="Download DOC">
+                        <FileText className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  {isAuthorized && (
+                    <button className="p-2 text-gray-400 hover:text-red-600" title="Delete">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
