@@ -445,158 +445,249 @@ const SupervisionModule: React.FC = () => {
       }
     };
 
+    // Get available users for assignment
+    const getAvailableUsers = () => {
+      const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
+      const mockUsers = [
+        { id: '1', name: 'John Anderson', email: 'admin@midroc.com', role: 'admin' },
+        { id: '2', name: 'Sarah Mitchell', email: 'gm@midroc.com', role: 'general_manager' },
+        { id: '3', name: 'Michael Rodriguez', email: 'pm@midroc.com', role: 'project_manager' },
+        { id: '4', name: 'Emma Thompson', email: 'consultant@midroc.com', role: 'consultant' },
+        { id: '5', name: 'David Chen', email: 'engineer@midroc.com', role: 'engineer' }
+      ];
+      return [...mockUsers, ...createdUsers].filter(u => u.role === 'engineer' || u.role === 'project_manager');
+    };
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">New Quality & Safety Inspection</h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <select
-                  value={formData.project_id}
-                  onChange={(e) => setFormData({...formData, project_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  required
-                >
-                  <option value="">Select Project</option>
-                  <option value="p1">Highway Construction Phase 1</option>
-                  <option value="p2">Urban Development Project</option>
-                  <option value="p3">Bridge Construction</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Date</label>
-                <input
-                  type="date"
-                  value={formData.inspection_date}
-                  onChange={(e) => setFormData({...formData, inspection_date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Type</label>
-                <select
-                  value={formData.inspection_type}
-                  onChange={(e) => setFormData({...formData, inspection_type: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                >
-                  <option value="quality">Quality Only</option>
-                  <option value="safety">Safety Only</option>
-                  <option value="combined">Quality & Safety</option>
-                </select>
-              </div>
-            </div>
+        <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">New Structural Design Checklist</h3>
 
-            {/* Checklist Items */}
-            <div className="space-y-6">
-              <h4 className="text-lg font-semibold text-gray-900">Inspection Checklist</h4>
-              {formData.checklist_items.map((category, categoryIndex) => (
-                <div key={categoryIndex} className="bg-gray-50 rounded-lg p-4">
-                  <h5 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                    {category.category === 'Personal Protective Equipment' && <HardHat className="w-5 h-5" />}
-                    {category.category === 'Site Safety' && <Shield className="w-5 h-5" />}
-                    {category.category === 'Equipment Safety' && <Zap className="w-5 h-5" />}
-                    {category.category === 'Quality Control' && <CheckCircle className="w-5 h-5" />}
-                    {category.category}
-                  </h5>
-                  <div className="space-y-3">
-                    {category.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="bg-white rounded p-3 border">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm text-gray-800 mb-2">{item.description}</div>
-                            <div className="flex gap-4">
-                              {(['pass', 'fail', 'na'] as const).map(status => (
-                                <label key={status} className="flex items-center gap-2 text-sm">
-                                  <input
-                                    type="radio"
-                                    name={`item-${categoryIndex}-${itemIndex}`}
-                                    value={status}
-                                    checked={item.status === status}
-                                    onChange={(e) => updateChecklistItem(categoryIndex, itemIndex, 'status', e.target.value)}
-                                    className="w-4 h-4 text-green-600"
-                                  />
-                                  <span className={`capitalize ${
-                                    status === 'pass' ? 'text-green-600' :
-                                    status === 'fail' ? 'text-red-600' : 'text-gray-600'
-                                  }`}>
-                                    {status === 'na' ? 'N/A' : status}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="w-64">
-                            <input
-                              type="text"
-                              placeholder="Notes..."
-                              value={item.notes || ''}
-                              onChange={(e) => updateChecklistItem(categoryIndex, itemIndex, 'notes', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                            />
-                          </div>
-                        </div>
-                      </div>
+            {/* Basic Info Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                  <select
+                    value={formData.project_id}
+                    onChange={(e) => setFormData({...formData, project_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  >
+                    <option value="">Select Project</option>
+                    <option value="p1">Highway Construction Phase 1</option>
+                    <option value="p2">Urban Development Project</option>
+                    <option value="p3">Bridge Construction</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Document No.</label>
+                  <input
+                    type="text"
+                    value={formData.document_number}
+                    onChange={(e) => setFormData({...formData, document_number: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="GCAE/COE/004"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Date</label>
+                  <input
+                    type="date"
+                    value={formData.inspection_date}
+                    onChange={(e) => setFormData({...formData, inspection_date: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Assign to</label>
+                  <select
+                    value={formData.assigned_to}
+                    onChange={(e) => setFormData({...formData, assigned_to: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="">Select Engineer</option>
+                    {getAvailableUsers().map(user => (
+                      <option key={user.id} value={user.id}>{user.name} ({user.role})</option>
                     ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Professional Checklist Table */}
+              <div className="border-2 border-gray-800 bg-white">
+                {/* Header */}
+                <div className="bg-gray-100 border-b-2 border-gray-800 p-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-green-600 text-white p-2 text-xs font-bold">AMI</div>
+                      <div className="text-xs">
+                        <div className="font-bold">Company Name:</div>
+                        <div>Gobalaffo Consulting Architects & Engineers P.L.C</div>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold">Document No.</div>
+                      <div className="text-red-600 font-bold">{formData.document_number}</div>
+                    </div>
+                    <div className="text-right text-xs">
+                      <div>Effective Date: {formData.inspection_date}</div>
+                      <div>Issue No: 1</div>
+                      <div>Page: {formData.page_info.current} of {formData.page_info.total}</div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Score Display */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-blue-800">Overall Score:</span>
-                <span className={`text-2xl font-bold ${
-                  calculateScore() >= 90 ? 'text-green-600' :
-                  calculateScore() >= 70 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {calculateScore()}%
-                </span>
-              </div>
-            </div>
+                {/* Title */}
+                <div className="bg-gray-200 border-b-2 border-gray-800 py-3 text-center">
+                  <h2 className="text-xl font-bold">Structural Design Checklist</h2>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Critical Issues (one per line)</label>
-                <textarea
-                  value={formData.critical_issues}
-                  onChange={(e) => setFormData({...formData, critical_issues: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  rows={4}
-                  placeholder="List any critical issues that require immediate attention..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Recommendations (one per line)</label>
-                <textarea
-                  value={formData.recommendations}
-                  onChange={(e) => setFormData({...formData, recommendations: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  rows={4}
-                  placeholder="Provide recommendations for improvements..."
-                />
-              </div>
-            </div>
+                {/* Project Name Field */}
+                <div className="border-b border-gray-400 p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">Project Name:</span>
+                    <div className="border-b border-gray-800 flex-1 min-h-[1.5rem] px-2">
+                      {formData.project_id === 'p1' ? 'Highway Construction Phase 1' :
+                       formData.project_id === 'p2' ? 'Urban Development Project' :
+                       formData.project_id === 'p3' ? 'Bridge Construction' : ''}
+                    </div>
+                  </div>
+                </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={() => setShowNewQSModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Create Inspection Report
-              </button>
-            </div>
-          </form>
+                {/* Checklist Table */}
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-yellow-200">
+                      <th className="border border-gray-800 px-2 py-2 w-12 text-sm font-bold">No</th>
+                      <th className="border border-gray-800 px-4 py-2 text-sm font-bold">Criteria</th>
+                      <th className="border border-gray-800 px-2 py-2 w-20 text-sm font-bold">Checked</th>
+                      <th className="border border-gray-800 px-2 py-2 w-24 text-sm font-bold">Not required</th>
+                      <th className="border border-gray-800 px-4 py-2 w-32 text-sm font-bold">Remark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.checklist_items.map((section, sectionIndex) => (
+                      <React.Fragment key={sectionIndex}>
+                        {/* Section Header */}
+                        <tr>
+                          <td className="border border-gray-800 px-2 py-2 font-bold text-center bg-gray-50">
+                            {section.section_number}
+                          </td>
+                          <td className="border border-gray-800 px-4 py-2 font-bold bg-gray-50" colSpan={4}>
+                            {section.section_title}
+                          </td>
+                        </tr>
+                        {/* Section Items */}
+                        {section.items.map((item, itemIndex) => (
+                          <tr key={itemIndex} className="hover:bg-gray-50">
+                            <td className="border border-gray-800 px-2 py-2 text-center text-sm"></td>
+                            <td className="border border-gray-800 px-4 py-2 text-sm">
+                              {item.criteria}
+                            </td>
+                            <td className="border border-gray-800 px-2 py-2 text-center">
+                              <input
+                                type="checkbox"
+                                checked={item.checked}
+                                onChange={(e) => updateChecklistItem(sectionIndex, itemIndex, 'checked', e.target.checked)}
+                                className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                              />
+                            </td>
+                            <td className="border border-gray-800 px-2 py-2 text-center">
+                              <input
+                                type="checkbox"
+                                checked={item.not_required}
+                                onChange={(e) => updateChecklistItem(sectionIndex, itemIndex, 'not_required', e.target.checked)}
+                                className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                              />
+                            </td>
+                            <td className="border border-gray-800 px-2 py-2">
+                              <input
+                                type="text"
+                                value={item.remark}
+                                onChange={(e) => updateChecklistItem(sectionIndex, itemIndex, 'remark', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border-0 focus:ring-0 focus:outline-none bg-transparent"
+                                placeholder="Enter remarks..."
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Signature Section */}
+                <div className="border-t-2 border-gray-800 p-4">
+                  <div className="grid grid-cols-2 gap-8">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-bold">Checked by:</span>
+                        <input
+                          type="text"
+                          value={formData.checked_by}
+                          onChange={(e) => setFormData({...formData, checked_by: e.target.value})}
+                          className="flex-1 border-b border-gray-800 focus:outline-none"
+                          placeholder="Name"
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <span className="text-sm text-gray-600">Signature:</span>
+                        <div className="border-b border-gray-300 mt-1 h-8"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-bold">Approved by:</span>
+                        <input
+                          type="text"
+                          value={formData.approved_by}
+                          onChange={(e) => setFormData({...formData, approved_by: e.target.value})}
+                          className="flex-1 border-b border-gray-800 focus:outline-none"
+                          placeholder="Name"
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <span className="text-sm text-gray-600">Signature:</span>
+                        <div className="border-b border-gray-300 mt-1 h-8"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Completion Score */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-blue-800">Completion Score:</span>
+                  <span className={`text-2xl font-bold ${
+                    calculateCompletionScore() >= 90 ? 'text-green-600' :
+                    calculateCompletionScore() >= 70 ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {calculateCompletionScore()}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowNewQSModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Create Checklist
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     );
