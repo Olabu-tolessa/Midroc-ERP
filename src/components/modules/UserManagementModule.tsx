@@ -12,9 +12,12 @@ import {
   Eye,
   Plus,
   User,
-  Lock
+  Lock,
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { userService, User as DatabaseUser } from '../../services/userService';
 
 interface PendingUser {
   id: string;
