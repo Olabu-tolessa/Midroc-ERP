@@ -154,9 +154,33 @@ const ContractualManagementModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'contracts' | 'forms'>('forms');
   const [showCreateContractModal, setShowCreateContractModal] = useState(false);
   const [signingAs, setSigningAs] = useState<'client' | 'contractor'>('client');
+  const [notification, setNotification] = useState<{type: 'success' | 'info' | 'warning', message: string} | null>(null);
 
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager';
   const formRef = useRef<HTMLDivElement>(null);
+
+  // Real-time update simulation (in production, this would be a WebSocket or polling mechanism)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Check for updates in contractForms and trigger notifications for admins
+      if (isAuthorized) {
+        const updatedForms = contractForms.filter(form =>
+          form.status === 'fully_signed' &&
+          new Date(form.contractor_signed_at || form.client_signed_at || '').getTime() > Date.now() - 30000
+        );
+
+        if (updatedForms.length > 0) {
+          setNotification({
+            type: 'success',
+            message: `${updatedForms.length} contract form(s) have been fully signed and are ready for review!`
+          });
+          setTimeout(() => setNotification(null), 5000);
+        }
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [contractForms, isAuthorized]);
 
   useEffect(() => {
     loadData();
