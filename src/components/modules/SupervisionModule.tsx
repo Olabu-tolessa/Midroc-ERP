@@ -789,6 +789,247 @@ const SupervisionModule: React.FC = () => {
     );
   };
 
+  const exportQSToPDF = async (report: QualitySafetyReport) => {
+    // Create a temporary element for PDF generation
+    const element = document.createElement('div');
+    element.style.padding = '20px';
+    element.style.fontFamily = 'Arial, sans-serif';
+    element.innerHTML = `
+      <div style="border: 2px solid black; background: white;">
+        <div style="background: #f5f5f5; border-bottom: 2px solid black; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="background: #16a34a; color: white; padding: 8px; font-weight: bold; font-size: 12px;">AMI</div>
+              <div style="font-size: 12px;">
+                <div style="font-weight: bold;">Company Name:</div>
+                <div>Gobalaffo Consulting Architects & Engineers P.L.C</div>
+              </div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 14px; font-weight: bold;">Document No.</div>
+              <div style="color: #dc2626; font-weight: bold;">${report.document_number}</div>
+            </div>
+            <div style="text-align: right; font-size: 12px;">
+              <div>Effective Date: ${report.inspection_date}</div>
+              <div>Issue No: 1</div>
+              <div>Page: ${report.page_info.current} of ${report.page_info.total}</div>
+            </div>
+          </div>
+        </div>
+        <div style="background: #e5e7eb; border-bottom: 2px solid black; padding: 12px; text-align: center;">
+          <h2 style="font-size: 20px; font-weight: bold; margin: 0;">Structural Design Checklist</h2>
+        </div>
+        <div style="border-bottom: 1px solid #9ca3af; padding: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: bold;">Project Name:</span>
+            <div style="border-bottom: 2px solid black; flex: 1; min-height: 24px; padding: 0 8px;">${report.project_title}</div>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #fef3c7;">
+              <th style="border: 1px solid black; padding: 8px; width: 48px; font-size: 14px; font-weight: bold;">No</th>
+              <th style="border: 1px solid black; padding: 16px; font-size: 14px; font-weight: bold;">Criteria</th>
+              <th style="border: 1px solid black; padding: 8px; width: 80px; font-size: 14px; font-weight: bold;">Checked</th>
+              <th style="border: 1px solid black; padding: 8px; width: 96px; font-size: 14px; font-weight: bold;">Not required</th>
+              <th style="border: 1px solid black; padding: 16px; width: 128px; font-size: 14px; font-weight: bold;">Remark</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${report.checklist_items.map(section => `
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; text-align: center; background: #f9fafb;">${section.section_number}</td>
+                <td style="border: 1px solid black; padding: 16px; font-weight: bold; background: #f9fafb;" colspan="4">${section.section_title}</td>
+              </tr>
+              ${section.items.map(item => `
+                <tr>
+                  <td style="border: 1px solid black; padding: 8px; text-align: center; font-size: 14px;"></td>
+                  <td style="border: 1px solid black; padding: 16px; font-size: 14px;">${item.criteria}</td>
+                  <td style="border: 1px solid black; padding: 8px; text-align: center;">${item.checked ? '✓' : ''}</td>
+                  <td style="border: 1px solid black; padding: 8px; text-align: center;">${item.not_required ? '✓' : ''}</td>
+                  <td style="border: 1px solid black; padding: 8px; font-size: 14px;">${item.remark}</td>
+                </tr>
+              `).join('')}
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="border-top: 2px solid black; padding: 16px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-weight: bold;">Checked by:</span>
+                <div style="border-bottom: 2px solid black; flex: 1; min-height: 24px; padding: 0 8px;">${report.checked_by}</div>
+              </div>
+              <div style="margin-top: 16px;">
+                <span style="font-size: 14px; color: #6b7280;">Signature:</span>
+                <div style="border-bottom: 1px solid #d1d5db; margin-top: 4px; height: 32px;">${report.checked_by_signature ? 'Signed ✓' : ''}</div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-weight: bold;">Approved by:</span>
+                <div style="border-bottom: 2px solid black; flex: 1; min-height: 24px; padding: 0 8px;">${report.approved_by}</div>
+              </div>
+              <div style="margin-top: 16px;">
+                <span style="font-size: 14px; color: #6b7280;">Signature:</span>
+                <div style="border-bottom: 1px solid #d1d5db; margin-top: 4px; height: 32px;">${report.approved_by_signature ? 'Signed ���' : ''}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(element);
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${report.project_title}_${report.document_number}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      document.body.removeChild(element);
+    }
+  };
+
+  const exportQSToDoc = async (report: QualitySafetyReport) => {
+    try {
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Structural Design Checklist',
+                  bold: true,
+                  size: 32,
+                })
+              ],
+              alignment: AlignmentType.CENTER,
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            new Table({
+              width: {
+                size: 100,
+                type: WidthType.PERCENTAGE,
+              },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Document No:", bold: true })] })],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: report.document_number })] })],
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Project:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: report.project_title })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Inspection Date:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: report.inspection_date })] })],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: " " })]
+            }),
+            ...report.checklist_items.flatMap(section => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${section.section_number}. ${section.section_title}`,
+                    bold: true,
+                    size: 24,
+                  })
+                ],
+              }),
+              ...section.items.map(item =>
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${item.checked ? '☑' : '☐'} ${item.criteria}`,
+                    }),
+                    ...(item.remark ? [new TextRun({ text: ` - ${item.remark}`, italics: true })] : [])
+                  ],
+                })
+              ),
+              new Paragraph({
+                children: [new TextRun({ text: " " })]
+              })
+            ]),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Signatures:",
+                  bold: true,
+                  size: 24,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Checked by: ${report.checked_by} ${report.checked_by_signature ? '(Signed)' : '(Pending)'}`,
+                })
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Approved by: ${report.approved_by} ${report.approved_by_signature ? '(Signed)' : '(Pending)'}`,
+                })
+              ],
+            }),
+          ],
+        }],
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      saveAs(blob, `${report.project_title}_${report.document_number}.docx`);
+    } catch (error) {
+      console.error('Error generating DOC:', error);
+    }
+  };
+
   const QSAssignmentModal = () => {
     const [assignTo, setAssignTo] = useState('');
 
