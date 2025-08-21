@@ -966,6 +966,20 @@ const ContractualManagementModule: React.FC = () => {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
+
+                  {isAuthorized && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
+                          setContractForms(prev => prev.filter(f => f.id !== form.id));
+                        }
+                      }}
+                      className="p-2 text-gray-400 hover:text-red-600"
+                      title="Delete Form"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
