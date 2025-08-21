@@ -872,7 +872,7 @@ const SupervisionModule: React.FC = () => {
               </div>
               <div style="margin-top: 16px;">
                 <span style="font-size: 14px; color: #6b7280;">Signature:</span>
-                <div style="border-bottom: 1px solid #d1d5db; margin-top: 4px; height: 32px;">${report.approved_by_signature ? 'Signed ���' : ''}</div>
+                <div style="border-bottom: 1px solid #d1d5db; margin-top: 4px; height: 32px;">${report.approved_by_signature ? 'Signed ✓' : ''}</div>
               </div>
             </div>
           </div>
@@ -1439,10 +1439,18 @@ const SupervisionModule: React.FC = () => {
                   </button>
                   {isAuthorized && report.status === 'approved' && (
                     <>
-                      <button className="p-2 text-gray-400 hover:text-red-600" title="Download PDF">
+                      <button
+                        onClick={() => exportQSToPDF(report)}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                        title="Download PDF"
+                      >
                         <Download className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-blue-600" title="Download DOC">
+                      <button
+                        onClick={() => exportQSToDoc(report)}
+                        className="p-2 text-gray-400 hover:text-blue-600"
+                        title="Download DOC"
+                      >
                         <FileText className="w-4 h-4" />
                       </button>
                     </>
