@@ -125,88 +125,118 @@ const ContractualManagementModule: React.FC = () => {
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager';
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Real-time update simulation (in production, this would be a WebSocket or polling mechanism)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Check for updates in contractForms and trigger notifications for admins
-      if (isAuthorized) {
-        const updatedForms = contractForms.filter(form =>
-          form.status === 'fully_signed' &&
-          new Date(form.contractor_signed_at || form.client_signed_at || '').getTime() > Date.now() - 30000
-        );
-
-        if (updatedForms.length > 0) {
-          setNotification({
-            type: 'success',
-            message: `${updatedForms.length} contract form(s) have been fully signed and are ready for review!`
-          });
-          setTimeout(() => setNotification(null), 5000);
-        }
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [contractForms, isAuthorized]);
-
+  // Real-time subscriptions for live updates
   useEffect(() => {
     loadData();
-  }, []);
+
+    // Set up real-time subscriptions if Supabase is configured
+    if (isSupabaseConfigured) {
+      const unsubscribeContracts = subscribeToContracts((updatedContracts) => {
+        setContracts(updatedContracts);
+      });
+
+      const unsubscribeContractForms = subscribeToContractForms((updatedForms) => {
+        setContractForms(updatedForms);
+
+        // Check for newly signed forms and notify admins
+        if (isAuthorized) {
+          const recentlySignedForms = updatedForms.filter(form =>
+            (form.status === 'signed' || form.status === 'completed') &&
+            form.contractor_signed_at &&
+            new Date(form.contractor_signed_at).getTime() > Date.now() - 30000
+          );
+
+          if (recentlySignedForms.length > 0) {
+            setNotification({
+              type: 'success',
+              message: `${recentlySignedForms.length} contract form(s) have been fully signed and are ready for review!`
+            });
+            setTimeout(() => setNotification(null), 5000);
+          }
+        }
+      });
+
+      return () => {
+        unsubscribeContracts();
+        unsubscribeContractForms();
+      };
+    }
+  }, [isAuthorized]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      // Mock contract data
-      const mockContracts: Contract[] = [
-        {
-          id: '1',
-          title: 'Highway Construction Phase 1',
-          client_name: 'Ministry of Transport',
-          contract_type: 'construction',
-          value: 5500000,
-          start_date: '2024-01-15',
-          end_date: '2024-12-31',
-          status: 'active',
-          approval_status: 'approved',
-          compliance_checks: {
-            legal_review: true,
-            financial_review: true,
-            technical_review: true
-          },
-          milestones: [
-            { name: 'Site Preparation', due_date: '2024-03-01', status: 'completed' },
-            { name: 'Foundation Work', due_date: '2024-06-01', status: 'pending' }
-          ],
-          created_at: '2024-01-01T00:00:00Z'
-        }
-      ];
 
-      // Mock form data
-      const mockForms: ContractForm[] = [
-        {
-          id: 'f1',
-          title: 'Highway Project - Document Acquisition',
-          template_type: 'document_acquisition',
-          client_name: 'Ministry of Transport',
-          contractor_name: 'Midroc Construction',
-          project_name: 'Highway Construction Phase 1',
-          site_location: 'Addis Ababa - Adama Highway',
-          effective_date: '2024-01-15',
-          form_data: FORM_TEMPLATES.document_acquisition.fields,
-          client_assigned_to: '7',
-          contractor_assigned_to: '8',
-          client_user_name: 'Ahmed Mohammed',
-          contractor_user_name: 'Sara Wilson',
-          status: 'assigned',
-          created_by: '1',
-          created_by_name: 'John Anderson',
-          created_at: '2024-01-10T00:00:00Z'
-        }
-      ];
+      if (isSupabaseConfigured) {
+        // Load real data from Supabase
+        const [contractsData, formsData] = await Promise.all([
+          contractService.getContracts(),
+          contractFormService.getContractForms()
+        ]);
 
-      setContracts(mockContracts);
-      setContractForms(mockForms);
+        setContracts(contractsData);
+        setContractForms(formsData);
+      } else {
+        // Fallback to mock data when Supabase is not configured
+        const mockContracts: Contract[] = [
+          {
+            id: '1',
+            title: 'Highway Construction Phase 1',
+            client_name: 'Ministry of Transport',
+            contract_type: 'construction',
+            value: 5500000,
+            start_date: '2024-01-15',
+            end_date: '2024-12-31',
+            status: 'active',
+            approval_status: 'approved',
+            compliance_checks: {
+              legal_review: true,
+              financial_review: true,
+              technical_review: true
+            },
+            milestones: [
+              { id: '1', title: 'Site Preparation', date: '2024-03-01', status: 'completed' },
+              { id: '2', title: 'Foundation Work', date: '2024-06-01', status: 'pending' }
+            ],
+            created_by: '1',
+            created_by_name: 'John Anderson',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z'
+          }
+        ];
+
+        const mockForms: ContractForm[] = [
+          {
+            id: 'f1',
+            title: 'Highway Project - Document Acquisition',
+            template_type: 'document_acquisition',
+            client_name: 'Ministry of Transport',
+            contractor_name: 'Midroc Construction',
+            project_name: 'Highway Construction Phase 1',
+            site_location: 'Addis Ababa - Adama Highway',
+            effective_date: '2024-01-15',
+            form_data: FORM_TEMPLATES.document_acquisition.fields,
+            client_assigned_to: '7',
+            contractor_assigned_to: '8',
+            client_user_name: 'Ahmed Mohammed',
+            contractor_user_name: 'Sara Wilson',
+            status: 'assigned',
+            created_by: '1',
+            created_by_name: 'John Anderson',
+            created_at: '2024-01-10T00:00:00Z',
+            updated_at: '2024-01-10T00:00:00Z'
+          }
+        ];
+
+        setContracts(mockContracts);
+        setContractForms(mockForms);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
+      setNotification({
+        type: 'warning',
+        message: 'Failed to load data. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
