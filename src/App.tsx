@@ -109,12 +109,12 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-gray-50">
         <Navigation
           currentModule={currentModule}
           onModuleChange={setCurrentModule}
         />
-        <main className="flex-1 ml-64 p-6 lg:p-8">
+        <main className="lg:ml-64 pt-16 lg:pt-0 p-4 sm:p-6 lg:p-8">
           {renderModule()}
         </main>
       </div>
