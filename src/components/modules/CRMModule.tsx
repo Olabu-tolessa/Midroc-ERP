@@ -3,14 +3,14 @@ import { UserCheck, Users, Phone, Mail } from 'lucide-react';
 
 export const CRMModule: React.FC = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Client Relations Management</h1>
-        <p className="text-gray-600">Manage construction clients, contracts, and relationships</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Client Relations Management</h1>
+        <p className="text-gray-600 text-sm sm:text-base">Manage construction clients, contracts, and relationships</p>
       </div>
 
       {/* CRM Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
