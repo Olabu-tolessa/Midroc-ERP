@@ -199,6 +199,263 @@ export interface Database {
           created_at?: string
         }
       }
+      contracts: {
+        Row: {
+          id: string
+          title: string
+          client_name: string
+          contract_type: string
+          value: number
+          start_date: string
+          end_date: string
+          status: string
+          approval_status: string
+          compliance_checks: any
+          milestones: any[]
+          created_by: string
+          created_by_name: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          client_name: string
+          contract_type: string
+          value: number
+          start_date: string
+          end_date: string
+          status?: string
+          approval_status?: string
+          compliance_checks?: any
+          milestones?: any[]
+          created_by: string
+          created_by_name: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          client_name?: string
+          contract_type?: string
+          value?: number
+          start_date?: string
+          end_date?: string
+          status?: string
+          approval_status?: string
+          compliance_checks?: any
+          milestones?: any[]
+          created_by?: string
+          created_by_name?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      contract_forms: {
+        Row: {
+          id: string
+          title: string
+          template_type: string
+          client_name: string
+          contractor_name: string | null
+          project_name: string | null
+          site_location: string | null
+          effective_date: string | null
+          form_data: any
+          client_signature: string | null
+          contractor_signature: string | null
+          client_signed_at: string | null
+          contractor_signed_at: string | null
+          client_assigned_to: string | null
+          contractor_assigned_to: string | null
+          client_user_name: string | null
+          contractor_user_name: string | null
+          status: string
+          created_by: string
+          created_by_name: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          template_type: string
+          client_name: string
+          contractor_name?: string | null
+          project_name?: string | null
+          site_location?: string | null
+          effective_date?: string | null
+          form_data?: any
+          client_signature?: string | null
+          contractor_signature?: string | null
+          client_signed_at?: string | null
+          contractor_signed_at?: string | null
+          client_assigned_to?: string | null
+          contractor_assigned_to?: string | null
+          client_user_name?: string | null
+          contractor_user_name?: string | null
+          status?: string
+          created_by: string
+          created_by_name: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          template_type?: string
+          client_name?: string
+          contractor_name?: string | null
+          project_name?: string | null
+          site_location?: string | null
+          effective_date?: string | null
+          form_data?: any
+          client_signature?: string | null
+          contractor_signature?: string | null
+          client_signed_at?: string | null
+          contractor_signed_at?: string | null
+          client_assigned_to?: string | null
+          contractor_assigned_to?: string | null
+          client_user_name?: string | null
+          contractor_user_name?: string | null
+          status?: string
+          created_by?: string
+          created_by_name?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      quality_safety_reports: {
+        Row: {
+          id: string
+          project_id: string
+          project_title: string
+          inspector_id: string
+          inspector_name: string
+          inspection_date: string
+          inspection_type: string
+          document_number: string
+          page_info: any
+          checklist_items: any[]
+          checked_by: string | null
+          checked_by_signature: string | null
+          checked_by_date: string | null
+          approved_by: string | null
+          approved_by_signature: string | null
+          approved_by_date: string | null
+          assigned_to: string | null
+          assigned_to_name: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          project_title: string
+          inspector_id: string
+          inspector_name: string
+          inspection_date: string
+          inspection_type: string
+          document_number: string
+          page_info?: any
+          checklist_items?: any[]
+          checked_by?: string | null
+          checked_by_signature?: string | null
+          checked_by_date?: string | null
+          approved_by?: string | null
+          approved_by_signature?: string | null
+          approved_by_date?: string | null
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          project_title?: string
+          inspector_id?: string
+          inspector_name?: string
+          inspection_date?: string
+          inspection_type?: string
+          document_number?: string
+          page_info?: any
+          checklist_items?: any[]
+          checked_by?: string | null
+          checked_by_signature?: string | null
+          checked_by_date?: string | null
+          approved_by?: string | null
+          approved_by_signature?: string | null
+          approved_by_date?: string | null
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      quality_tasks: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          type: string
+          category: string
+          assigned_to: string | null
+          assigned_to_name: string | null
+          project_id: string | null
+          project_name: string | null
+          checkpoints: any[]
+          created_by: string
+          created_by_name: string
+          due_date: string | null
+          status: string
+          priority: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          type: string
+          category: string
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          project_id?: string | null
+          project_name?: string | null
+          checkpoints?: any[]
+          created_by: string
+          created_by_name: string
+          due_date?: string | null
+          status?: string
+          priority?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          type?: string
+          category?: string
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          project_id?: string | null
+          project_name?: string | null
+          checkpoints?: any[]
+          created_by?: string
+          created_by_name?: string
+          due_date?: string | null
+          status?: string
+          priority?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
