@@ -79,10 +79,10 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-700 flex flex-col lg:flex-row">
       {/* Left Panel - Engineering Branding */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-600/20 to-blue-600/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-600/30 to-green-800/30"></div>
         <div 
           className="absolute inset-0 opacity-20"
           style={{
@@ -100,16 +100,16 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
               </div>
               <div>
                 <h1 className="text-3xl font-bold">MIDROC ERP</h1>
-                <p className="text-lg text-blue-100">Join Our Team</p>
+                <p className="text-lg text-green-100">Join Our Team</p>
               </div>
             </div>
             
             <h2 className="text-4xl xl:text-5xl font-bold mb-6 leading-tight">
               Shape the Future of
-              <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"> Construction</span>
+              <span className="bg-gradient-to-r from-green-300 to-white bg-clip-text text-transparent"> Construction</span>
             </h2>
             
-            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+            <p className="text-xl text-green-100 mb-8 leading-relaxed">
               Join thousands of engineering professionals using MIDROC ERP to deliver 
               world-class construction and consulting projects.
             </p>
@@ -117,19 +117,19 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
 
           <div className="space-y-4">
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <CheckCircle className="w-6 h-6 text-green-400" />
+              <CheckCircle className="w-6 h-6 text-green-300" />
               <span className="text-lg">Advanced project management tools</span>
             </div>
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <CheckCircle className="w-6 h-6 text-green-400" />
+              <CheckCircle className="w-6 h-6 text-green-300" />
               <span className="text-lg">Real-time collaboration platform</span>
             </div>
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <CheckCircle className="w-6 h-6 text-green-400" />
+              <CheckCircle className="w-6 h-6 text-green-300" />
               <span className="text-lg">ISO certified quality assurance</span>
             </div>
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <CheckCircle className="w-6 h-6 text-green-400" />
+              <CheckCircle className="w-6 h-6 text-green-300" />
               <span className="text-lg">Comprehensive reporting & analytics</span>
             </div>
           </div>
@@ -149,7 +149,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
               />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Join MIDROC ERP</h1>
-            <p className="text-blue-100">Create your professional account</p>
+            <p className="text-green-100">Create your professional account</p>
           </div>
 
           {/* Signup Card */}
@@ -175,7 +175,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -192,7 +192,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -210,7 +210,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                         key={role.value}
                         className={`cursor-pointer p-4 rounded-xl border-2 transition-all hover:shadow-md ${
                           formData.role === role.value
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-green-500 bg-green-50 text-green-700'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -250,7 +250,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                       placeholder="Password"
                     />
                   </div>
@@ -267,7 +267,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                       placeholder="Confirm"
                     />
                   </div>
@@ -291,7 +291,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -308,7 +308,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onLoginClick, onSignupSu
                 <button
                   type="button"
                   onClick={onLoginClick}
-                  className="text-blue-600 font-semibold hover:text-blue-700 inline-flex items-center gap-1 hover:underline"
+                  className="text-green-600 font-semibold hover:text-green-700 inline-flex items-center gap-1 hover:underline"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Sign In</span>
