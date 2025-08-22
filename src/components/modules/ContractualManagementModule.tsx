@@ -268,24 +268,46 @@ const ContractualManagementModule: React.FC = () => {
 
     const allUsers = getRealUsers();
 
-    const handleAssign = () => {
+    const handleAssign = async () => {
       if (!selectedForm) return;
 
-      const updatedForm = {
-        ...selectedForm,
-        client_assigned_to: assignData.client_assigned_to,
-        contractor_assigned_to: assignData.contractor_assigned_to,
-        client_user_name: allUsers.find(u => u.id === assignData.client_assigned_to)?.name || '',
-        contractor_user_name: allUsers.find(u => u.id === assignData.contractor_assigned_to)?.name || '',
-        status: 'assigned' as const
-      };
+      try {
+        const assignments = {
+          client_assigned_to: assignData.client_assigned_to,
+          contractor_assigned_to: assignData.contractor_assigned_to,
+          client_user_name: allUsers.find(u => u.id === assignData.client_assigned_to)?.name || '',
+          contractor_user_name: allUsers.find(u => u.id === assignData.contractor_assigned_to)?.name || '',
+          status: 'assigned' as const
+        };
 
-      setContractForms(prev => prev.map(form => 
-        form.id === selectedForm.id ? updatedForm : form
-      ));
+        let updatedForm;
+        if (isSupabaseConfigured) {
+          // Update in database
+          updatedForm = await contractFormService.assignContractForm(selectedForm.id, assignments);
+        } else {
+          // Fallback to local state update
+          updatedForm = { ...selectedForm, ...assignments };
+          setContractForms(prev => prev.map(form =>
+            form.id === selectedForm.id ? updatedForm : form
+          ));
+        }
 
-      setShowAssignModal(false);
-      setSelectedForm(updatedForm);
+        setShowAssignModal(false);
+        setSelectedForm(updatedForm);
+
+        setNotification({
+          type: 'success',
+          message: 'Form assigned successfully!'
+        });
+        setTimeout(() => setNotification(null), 3000);
+      } catch (error) {
+        console.error('Error assigning form:', error);
+        setNotification({
+          type: 'warning',
+          message: 'Failed to assign form. Please try again.'
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
     };
 
     return (
