@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://jqjggacoexmigwirpuek.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxamdnYWNvZXhtaWd3aXJwdWVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4Njc1MzQsImV4cCI6MjA3MTQ0MzUzNH0.cq-LZpubcQG9Of1h4c3OsWH03BIpJFbZZ7dWyvTQRnE'
 
 // Check if we have real Supabase credentials
-export const isSupabaseConfigured = supabaseUrl !== 'https://placeholder-project.supabase.co' &&
-                                   supabaseKey !== 'placeholder-anon-key' &&
+export const isSupabaseConfigured = supabaseUrl !== 'https://jqjggacoexmigwirpuek.supabase.co' &&
+  supabaseKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxamdnYWNvZXhtaWd3aXJwdWVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4Njc1MzQsImV4cCI6MjA3MTQ0MzUzNH0.cq-LZpubcQG9Of1h4c3OsWH03BIpJFbZZ7dWyvTQRnE' &&
                                    supabaseUrl.includes('supabase.co')
 
 // Create Supabase client with fallback configuration
