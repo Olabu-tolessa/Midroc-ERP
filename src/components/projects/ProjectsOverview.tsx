@@ -19,17 +19,20 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, Ta
 import { saveAs } from 'file-saver';
 import { Project } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { DatabaseService } from '../../services/database';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import { NewProjectModal } from './NewProjectModal';
 import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { EditProjectModal } from './EditProjectModal';
-import { addProject, updateProject, deleteProject } from '../../data/mockData';
 
 interface ProjectsOverviewProps {
-  projects: Project[];
+  projects?: Project[];
 }
 
-export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) => {
+export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects: initialProjects }) => {
   const { user } = useAuth();
+  const [projects, setProjects] = useState<Project[]>(initialProjects || []);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -39,6 +42,7 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<Project | null>(null);
+  const [isRealTime, setIsRealTime] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -338,11 +342,16 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
     }
 
     try {
-      deleteProject(project.id);
-      setNotification({
-        type: 'success',
-        message: `Construction project "${project.name}" has been deleted successfully.`
-      });
+      const success = await DatabaseService.deleteProject(project.id);
+      if (success) {
+        setProjects(prev => prev.filter(p => p.id !== project.id));
+        setNotification({
+          type: 'success',
+          message: `Construction project "${project.name}" has been deleted successfully.`
+        });
+      } else {
+        throw new Error('Delete failed');
+      }
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Delete error:', error);
@@ -361,12 +370,30 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
 
   const handleCreateProject = async (projectData: any) => {
     try {
-      addProject(projectData);
-      setShowNewProjectModal(false);
-      setNotification({
-        type: 'success',
-        message: `New construction project "${projectData.name}" has been created successfully!`
+      const result = await DatabaseService.createProject({
+        name: projectData.name,
+        description: projectData.description,
+        status: projectData.status || 'planning',
+        priority: projectData.priority || 'medium',
+        progress: 0,
+        budget: parseFloat(projectData.budget || '0'),
+        start_date: projectData.startDate,
+        end_date: projectData.endDate,
+        manager_id: projectData.managerId || user?.id || '',
+        client_id: projectData.clientId || user?.id || ''
       });
+
+      if (result) {
+        // Refresh projects list
+        await loadProjects();
+        setShowNewProjectModal(false);
+        setNotification({
+          type: 'success',
+          message: `New construction project "${projectData.name}" has been created successfully!`
+        });
+      } else {
+        throw new Error('Create failed');
+      }
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Create project error:', error);
@@ -380,13 +407,29 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
 
   const handleUpdateProject = async (projectData: any) => {
     try {
-      updateProject(projectData);
-      setShowEditModal(false);
-      setSelectedProject(null);
-      setNotification({
-        type: 'success',
-        message: `Construction project "${projectData.name}" has been updated successfully!`
+      const result = await DatabaseService.updateProject(projectData.id, {
+        name: projectData.name,
+        description: projectData.description,
+        status: projectData.status,
+        priority: projectData.priority,
+        progress: projectData.progress,
+        budget: parseFloat(projectData.budget || '0'),
+        start_date: projectData.startDate,
+        end_date: projectData.endDate
       });
+
+      if (result) {
+        // Refresh projects list
+        await loadProjects();
+        setShowEditModal(false);
+        setSelectedProject(null);
+        setNotification({
+          type: 'success',
+          message: `Construction project "${projectData.name}" has been updated successfully!`
+        });
+      } else {
+        throw new Error('Update failed');
+      }
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Update project error:', error);
@@ -573,6 +616,56 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
     );
   };
 
+  // Load projects data
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const projectsData = await DatabaseService.getProjects();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      setNotification({
+        type: 'error',
+        message: 'Failed to load projects. Please try again.'
+      });
+      setTimeout(() => setNotification(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Set up real-time subscriptions
+  const setupRealTimeSubscriptions = () => {
+    if (!isSupabaseConfigured) {
+      console.log('Using mock data - real-time updates not available');
+      return;
+    }
+
+    setIsRealTime(true);
+
+    const unsubscribe = DatabaseService.subscribeToProjects((updatedProjects) => {
+      setProjects(updatedProjects);
+    });
+
+    return unsubscribe;
+  };
+
+  // Initialize component
+  React.useEffect(() => {
+    if (!initialProjects) {
+      loadProjects();
+    } else {
+      setProjects(initialProjects);
+      setLoading(false);
+    }
+
+    const unsubscribe = setupRealTimeSubscriptions();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
@@ -602,11 +695,24 @@ export const ProjectsOverview: React.FC<ProjectsOverviewProps> = ({ projects }) 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Construction Project Management</h1>
-          <p className="text-gray-600 text-sm sm:text-base">Manage and track all construction and consulting projects</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Construction Project Management</h1>
+            {loading && (
+              <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+            )}
+          </div>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-gray-600 text-sm sm:text-base">Manage and track all construction and consulting projects</p>
+            {isRealTime && (
+              <div className="flex items-center gap-1 text-green-600 text-sm">
+                <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+                <span>Live Updates</span>
+              </div>
+            )}
+          </div>
         </div>
         {(user?.role === 'admin' || user?.role === 'general_manager') && (
-          <button 
+          <button
             onClick={() => setShowNewProjectModal(true)}
             className="bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-800 transition-colors text-sm sm:text-base whitespace-nowrap"
           >
