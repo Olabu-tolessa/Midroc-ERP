@@ -28,10 +28,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-700 flex flex-col lg:flex-row">
       {/* Left Panel - Engineering Branding */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-600/20 to-blue-600/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-600/30 to-green-800/30"></div>
         <div 
           className="absolute inset-0 opacity-20"
           style={{
@@ -49,16 +49,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">MIDROC ERP</h1>
-                <p className="text-lg text-blue-100">Engineering Excellence</p>
+                <p className="text-lg text-green-100">Engineering Excellence</p>
               </div>
             </div>
             
             <h2 className="text-4xl xl:text-5xl font-bold mb-6 leading-tight">
               Advanced Construction & 
-              <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"> Consulting</span> Management
+              <span className="bg-gradient-to-r from-green-300 to-white bg-clip-text text-transparent"> Consulting</span> Management
             </h2>
             
-            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+            <p className="text-xl text-green-100 mb-8 leading-relaxed">
               Streamline your construction projects with our comprehensive ERP solution. 
               Manage projects, supervise quality, and drive engineering excellence.
             </p>
@@ -66,19 +66,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <Building2 className="w-8 h-8 text-green-400 mb-3" />
+              <Building2 className="w-8 h-8 text-green-300 mb-3" />
               <h3 className="font-semibold mb-2">Project Management</h3>
-              <p className="text-sm text-blue-100">Complete project lifecycle management</p>
+              <p className="text-sm text-green-100">Complete project lifecycle management</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <Eye className="w-8 h-8 text-blue-400 mb-3" />
+              <Eye className="w-8 h-8 text-green-300 mb-3" />
               <h3 className="font-semibold mb-2">Quality Supervision</h3>
-              <p className="text-sm text-blue-100">Real-time monitoring and reporting</p>
+              <p className="text-sm text-green-100">Real-time monitoring and reporting</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <Shield className="w-8 h-8 text-purple-400 mb-3" />
+              <Shield className="w-8 h-8 text-green-300 mb-3" />
               <h3 className="font-semibold mb-2">Safety Compliance</h3>
-              <p className="text-sm text-blue-100">ISO certified quality assurance</p>
+              <p className="text-sm text-green-100">ISO certified quality assurance</p>
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
               />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">MIDROC ERP</h1>
-            <p className="text-blue-100">Engineering Management Platform</p>
+            <p className="text-green-100">Engineering Management Platform</p>
           </div>
 
           {/* Login Card */}
@@ -112,27 +112,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
 
             {/* Demo Credentials - Collapsible */}
             <div className="px-6 sm:px-8 pb-6">
-              <details className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-                <summary className="cursor-pointer p-4 font-semibold text-blue-800 hover:bg-blue-100 rounded-lg transition-colors">
+              <details className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+                <summary className="cursor-pointer p-4 font-semibold text-green-800 hover:bg-green-100 rounded-lg transition-colors">
                   🔐 Demo Accounts (Click to expand)
                 </summary>
-                <div className="px-4 pb-4 text-sm text-blue-700 space-y-2">
+                <div className="px-4 pb-4 text-sm text-green-700 space-y-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="bg-white/50 rounded p-2">
+                    <div className="bg-white/70 rounded p-2">
                       <p><span className="font-medium">Admin:</span> admin@midroc.com</p>
                       <p><span className="font-medium">GM:</span> gm@midroc.com</p>
                       <p><span className="font-medium">PM:</span> pm@midroc.com</p>
                       <p><span className="font-medium">Engineer:</span> engineer@midroc.com</p>
                     </div>
-                    <div className="bg-white/50 rounded p-2">
+                    <div className="bg-white/70 rounded p-2">
                       <p><span className="font-medium">Consultant:</span> consultant@midroc.com</p>
                       <p><span className="font-medium">Client:</span> client@midroc.com</p>
                       <p><span className="font-medium">Contractor:</span> contractor@midroc.com</p>
                       <p><span className="font-medium">Employee:</span> employee@midroc.com</p>
                     </div>
                   </div>
-                  <p className="text-center font-medium text-blue-800 bg-blue-100 rounded p-2">
-                    Password for all accounts: <code className="bg-blue-200 px-1 rounded">password</code>
+                  <p className="text-center font-medium text-green-800 bg-green-200 rounded p-2">
+                    Password for all accounts: <code className="bg-green-300 px-1 rounded">password</code>
                   </p>
                 </div>
               </details>
@@ -150,7 +150,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -166,7 +166,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
                     placeholder="Enter your password"
                   />
                 </div>
@@ -182,7 +182,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -199,7 +199,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSignupClick }) => {
                 <button
                   type="button"
                   onClick={onSignupClick}
-                  className="text-blue-600 font-semibold hover:text-blue-700 inline-flex items-center gap-1 hover:underline"
+                  className="text-green-600 font-semibold hover:text-green-700 inline-flex items-center gap-1 hover:underline"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Create Account</span>
