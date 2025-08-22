@@ -16,52 +16,7 @@ import {
 } from '../../services/contractService';
 import { isSupabaseConfigured } from '../../lib/supabase';
 
-interface ContractForm {
-  id: string;
-  title: string;
-  template_type: 'document_acquisition' | 'site_handover_inspection' | 'site_handover';
-  client_name: string;
-  contractor_name: string;
-  project_name: string;
-  site_location: string;
-  effective_date: string;
-  form_data: any;
-  client_signature?: string;
-  contractor_signature?: string;
-  client_signed_at?: string;
-  contractor_signed_at?: string;
-  client_assigned_to?: string;
-  contractor_assigned_to?: string;
-  client_user_name?: string;
-  contractor_user_name?: string;
-  status: 'draft' | 'assigned' | 'pending_signatures' | 'client_signed' | 'fully_signed' | 'completed';
-  created_by: string;
-  created_by_name: string;
-  created_at: string;
-}
-
-interface Contract {
-  id: string;
-  title: string;
-  client_name: string;
-  contract_type: 'construction' | 'consulting' | 'maintenance' | 'supply';
-  value: number;
-  start_date: string;
-  end_date: string;
-  status: 'draft' | 'active' | 'pending_approval' | 'completed' | 'terminated';
-  approval_status: 'pending' | 'approved' | 'rejected';
-  compliance_checks: {
-    legal_review: boolean;
-    financial_review: boolean;
-    technical_review: boolean;
-  };
-  milestones: {
-    name: string;
-    due_date: string;
-    status: 'pending' | 'completed' | 'overdue';
-  }[];
-  created_at: string;
-}
+// Interfaces now imported from contractService
 
 const FORM_TEMPLATES = {
   document_acquisition: {
