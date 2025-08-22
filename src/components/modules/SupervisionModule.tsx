@@ -92,46 +92,66 @@ const SupervisionModule: React.FC = () => {
   const loadReports = async () => {
     try {
       setLoading(true);
-      // Mock data - replace with actual Supabase query when DB is set up
-      const mockReports: SupervisionReport[] = [
-        {
-          id: '1',
-          project_id: 'p1',
-          project_title: 'Highway Construction Phase 1',
-          supervisor_id: '2',
-          supervisor_name: 'Sarah Mitchell',
-          report_date: '2024-01-15',
-          status: 'good',
-          issues: 'No major issues reported',
-          recommendations: 'Continue with current approach',
-          created_at: '2024-01-15T10:00:00Z'
-        },
-        {
-          id: '2',
-          project_id: 'p2',
-          project_title: 'Urban Development Project',
-          supervisor_id: '3',
-          supervisor_name: 'Michael Rodriguez',
-          report_date: '2024-01-14',
-          status: 'issues',
-          issues: 'Material delivery delays affecting timeline',
-          recommendations: 'Contact suppliers for expedited delivery',
-          created_at: '2024-01-14T14:30:00Z'
-        },
-        {
-          id: '3',
-          project_id: 'p3',
-          project_title: 'Bridge Construction',
-          supervisor_id: '2',
-          supervisor_name: 'Sarah Mitchell',
-          report_date: '2024-01-13',
-          status: 'critical',
-          issues: 'Safety concerns identified in foundation work',
-          recommendations: 'Immediate inspection required, halt work until resolved',
-          created_at: '2024-01-13T09:15:00Z'
-        }
-      ];
-      setReports(mockReports);
+
+      if (isSupabaseConfigured) {
+        // Load real data from Supabase
+        const reportsData = await supervisionService.getSupervisionReports();
+        // Map service data to component interface format
+        const mappedReports: SupervisionReport[] = reportsData.map(report => ({
+          id: report.id,
+          project_id: report.project_id,
+          project_title: `Project ${report.project_id}`, // You might want to join with projects table
+          supervisor_id: report.supervisor_id,
+          supervisor_name: `Supervisor ${report.supervisor_id}`, // You might want to join with users table
+          report_date: report.report_date,
+          status: report.status as 'good' | 'issues' | 'critical',
+          issues: report.issues,
+          recommendations: report.recommendations,
+          created_at: report.created_at
+        }));
+        setReports(mappedReports);
+      } else {
+        // Fallback to mock data when Supabase is not configured
+        const mockReports: SupervisionReport[] = [
+          {
+            id: '1',
+            project_id: 'p1',
+            project_title: 'Highway Construction Phase 1',
+            supervisor_id: '2',
+            supervisor_name: 'Sarah Mitchell',
+            report_date: '2024-01-15',
+            status: 'good',
+            issues: 'No major issues reported',
+            recommendations: 'Continue with current approach',
+            created_at: '2024-01-15T10:00:00Z'
+          },
+          {
+            id: '2',
+            project_id: 'p2',
+            project_title: 'Urban Development Project',
+            supervisor_id: '3',
+            supervisor_name: 'Michael Rodriguez',
+            report_date: '2024-01-14',
+            status: 'issues',
+            issues: 'Material delivery delays affecting timeline',
+            recommendations: 'Contact suppliers for expedited delivery',
+            created_at: '2024-01-14T14:30:00Z'
+          },
+          {
+            id: '3',
+            project_id: 'p3',
+            project_title: 'Bridge Construction',
+            supervisor_id: '2',
+            supervisor_name: 'Sarah Mitchell',
+            report_date: '2024-01-13',
+            status: 'critical',
+            issues: 'Safety concerns identified in foundation work',
+            recommendations: 'Immediate inspection required, halt work until resolved',
+            created_at: '2024-01-13T09:15:00Z'
+          }
+        ];
+        setReports(mockReports);
+      }
     } catch (error) {
       console.error('Error loading supervision reports:', error);
     } finally {
