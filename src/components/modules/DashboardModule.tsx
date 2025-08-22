@@ -149,155 +149,155 @@ const DashboardModule: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Welcome back, {user?.name}
           </h1>
           <p className="text-gray-600 mt-1">
             Here's what's happening with your projects today
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <div className="text-sm text-gray-600">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            {new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })}
           </div>
-          <div className="text-2xl font-bold text-green-600">
-            {new Date().toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+          <div className="text-xl sm:text-2xl font-bold text-green-600">
+            {new Date().toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit'
             })}
           </div>
         </div>
       </div>
 
       {/* Main KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Total Projects */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-sm font-medium">Total Projects</p>
-              <p className="text-3xl font-bold">{dashboardData.projects.total}</p>
-              <p className="text-blue-100 text-sm mt-2">
+              <p className="text-2xl sm:text-3xl font-bold">{dashboardData.projects.total}</p>
+              <p className="text-blue-100 text-xs sm:text-sm mt-2">
                 {dashboardData.projects.active} Active, {dashboardData.projects.completed} Completed
               </p>
             </div>
-            <Building2 className="w-12 h-12 text-blue-200" />
+            <Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-blue-200" />
           </div>
         </div>
 
         {/* Total Revenue */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-              <p className="text-3xl font-bold">{formatCurrency(dashboardData.finance.totalRevenue)}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{formatCurrency(dashboardData.finance.totalRevenue)}</p>
               <div className="flex items-center mt-2">
                 <ArrowUpRight className="w-4 h-4 text-green-200" />
-                <p className="text-green-100 text-sm ml-1">
+                <p className="text-green-100 text-xs sm:text-sm ml-1">
                   {formatCurrency(dashboardData.finance.monthlyRevenue)} this month
                 </p>
               </div>
             </div>
-            <DollarSign className="w-12 h-12 text-green-200" />
+            <DollarSign className="w-10 h-10 sm:w-12 sm:h-12 text-green-200" />
           </div>
         </div>
 
         {/* Team Size */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm font-medium">Team Members</p>
-              <p className="text-3xl font-bold">{dashboardData.team.totalEmployees}</p>
-              <p className="text-purple-100 text-sm mt-2">
+              <p className="text-2xl sm:text-3xl font-bold">{dashboardData.team.totalEmployees}</p>
+              <p className="text-purple-100 text-xs sm:text-sm mt-2">
                 Working on {dashboardData.team.activeProjects} projects
               </p>
             </div>
-            <Users className="w-12 h-12 text-purple-200" />
+            <Users className="w-10 h-10 sm:w-12 sm:h-12 text-purple-200" />
           </div>
         </div>
 
         {/* Consulting Revenue */}
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100 text-sm font-medium">Consulting Revenue</p>
-              <p className="text-3xl font-bold">{formatCurrency(dashboardData.consulting.totalRevenue)}</p>
-              <p className="text-orange-100 text-sm mt-2">
+              <p className="text-2xl sm:text-3xl font-bold">{formatCurrency(dashboardData.consulting.totalRevenue)}</p>
+              <p className="text-orange-100 text-xs sm:text-sm mt-2">
                 {dashboardData.consulting.activeContracts} active contracts
               </p>
             </div>
-            <FileText className="w-12 h-12 text-orange-200" />
+            <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-orange-200" />
           </div>
         </div>
       </div>
 
       {/* Secondary KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Monthly Profit */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm font-medium">Monthly Profit</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(dashboardData.finance.profit)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(dashboardData.finance.profit)}</p>
               <div className="flex items-center mt-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
-                <p className="text-green-600 text-sm ml-1">+12.5% from last month</p>
+                <p className="text-green-600 text-xs sm:text-sm ml-1">+12.5% from last month</p>
               </div>
             </div>
-            <BarChart3 className="w-8 h-8 text-gray-400" />
+            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
           </div>
         </div>
 
         {/* Critical Issues */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm font-medium">Critical Issues</p>
-              <p className="text-2xl font-bold text-red-600">{dashboardData.supervision.criticalIssues}</p>
-              <p className="text-gray-500 text-sm mt-2">Require immediate attention</p>
+              <p className="text-xl sm:text-2xl font-bold text-red-600">{dashboardData.supervision.criticalIssues}</p>
+              <p className="text-gray-500 text-xs sm:text-sm mt-2">Require immediate attention</p>
             </div>
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
           </div>
         </div>
 
         {/* Hours Logged */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm font-medium">Hours Logged</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(dashboardData.consulting.hoursLogged)}</p>
-              <p className="text-gray-500 text-sm mt-2">Consulting hours this quarter</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatNumber(dashboardData.consulting.hoursLogged)}</p>
+              <p className="text-gray-500 text-xs sm:text-sm mt-2">Consulting hours this quarter</p>
             </div>
-            <Clock className="w-8 h-8 text-gray-400" />
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
           </div>
         </div>
 
         {/* Pending Tasks */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm font-medium">Pending Tasks</p>
-              <p className="text-2xl font-bold text-yellow-600">{dashboardData.team.pendingTasks}</p>
-              <p className="text-gray-500 text-sm mt-2">Across all active projects</p>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-600">{dashboardData.team.pendingTasks}</p>
+              <p className="text-gray-500 text-xs sm:text-sm mt-2">Across all active projects</p>
             </div>
-            <Target className="w-8 h-8 text-yellow-500" />
+            <Target className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
           </div>
         </div>
       </div>
 
       {/* Content Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Activities */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Activity className="w-5 h-5 text-green-600" />
             Recent Activities
@@ -347,7 +347,7 @@ const DashboardModule: React.FC = () => {
         </div>
 
         {/* Project Status Overview */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <HardHat className="w-5 h-5 text-green-600" />
             Project Status Overview
@@ -402,9 +402,9 @@ const DashboardModule: React.FC = () => {
 
       {/* Quick Actions */}
       {(user?.role === 'admin' || user?.role === 'general_manager') && (
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={() => window.location.hash = '#projects'}
               className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-center transition-colors group"
