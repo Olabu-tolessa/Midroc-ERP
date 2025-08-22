@@ -6,6 +6,15 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+import {
+  contractService,
+  contractFormService,
+  subscribeToContracts,
+  subscribeToContractForms,
+  Contract,
+  ContractForm
+} from '../../services/contractService';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 interface ContractForm {
   id: string;
