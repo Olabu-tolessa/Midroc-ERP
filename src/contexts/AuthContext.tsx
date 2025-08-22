@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { User } from '../types';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { DatabaseService, DatabaseUser } from '../services/database';
 
 interface PendingUser {
   id: string;
@@ -14,17 +16,20 @@ interface PendingUser {
 
 interface AuthContextType {
   user: User | null;
+  supabaseUser: SupabaseUser | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   signup: (name: string, email: string, password: string, role: string) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
   hasPermission: (permission: string) => boolean;
   hasRole: (roles: string[]) => boolean;
   canAccessModule: (module: string) => boolean;
-  getPendingUsers: () => PendingUser[];
+  getPendingUsers: () => Promise<PendingUser[]>;
   approveUser: (userId: string) => Promise<boolean>;
   rejectUser: (userId: string) => Promise<boolean>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,233 +71,275 @@ const ROLE_PERMISSIONS = {
   ],
   project_manager: [
     'view_projects',
-    'edit_assigned_projects',
+    'create_projects',
+    'edit_projects',
+    'upload_designs',
     'export_data',
-    'create_supervision_reports',
-    'view_consulting',
-    'view_finances',
-    'view_analytics_limited',
-    'view_hr_limited',
-    'quality_audit_limited'
-  ],
-  consultant: [
-    'view_consulting',
-    'manage_own_contracts',
-    'create_time_logs',
-    'view_projects_limited',
-    'export_own_data'
+    'manage_supervision',
+    'view_analytics',
+    'manage_crm'
   ],
   engineer: [
-    'view_projects_limited',
-    'create_supervision_reports',
-    'view_consulting_limited',
-    'quality_audit_limited'
+    'view_projects',
+    'upload_designs',
+    'export_data',
+    'manage_supervision',
+    'quality_audit'
   ],
-  employee: [
-    'view_dashboard',
-    'view_own_tasks',
-    'view_projects_limited'
+  consultant: [
+    'view_projects',
+    'manage_consulting',
+    'upload_designs',
+    'export_data',
+    'view_analytics'
   ],
   client: [
-    'view_dashboard',
-    'view_own_projects',
-    'sign_assigned_contracts',
-    'view_project_progress'
+    'view_projects',
+    'export_data',
+    'manage_crm'
   ],
   contractor: [
-    'view_dashboard',
-    'view_assigned_projects',
-    'sign_assigned_contracts',
-    'view_project_progress',
-    'submit_progress_reports'
+    'view_projects',
+    'upload_designs',
+    'manage_supervision'
+  ],
+  employee: [
+    'view_projects'
   ]
 };
 
 // Module access configuration
 const MODULE_ACCESS = {
-  dashboard: ['admin', 'general_manager', 'project_manager', 'consultant', 'engineer', 'employee', 'client', 'contractor'],
-  projects: ['admin', 'general_manager', 'project_manager', 'engineer', 'client', 'contractor'],
-  supervision: ['admin', 'general_manager', 'project_manager', 'engineer'],
+  dashboard: ['admin', 'general_manager', 'project_manager', 'engineer', 'consultant', 'client', 'contractor', 'employee'],
+  projects: ['admin', 'general_manager', 'project_manager', 'engineer', 'consultant', 'client', 'contractor', 'employee'],
+  supervision: ['admin', 'general_manager', 'project_manager', 'engineer', 'contractor'],
   consulting: ['admin', 'general_manager', 'consultant'],
-  contracts: ['admin', 'general_manager', 'client', 'contractor'],
-  users: ['admin'],
+  contracts: ['admin', 'general_manager', 'project_manager'],
+  users: ['admin', 'general_manager'],
   hr: ['admin', 'general_manager'],
   finance: ['admin', 'general_manager'],
-  qa: ['admin', 'general_manager', 'project_manager', 'engineer'],
-  crm: ['admin', 'general_manager', 'consultant']
+  qa: ['admin', 'general_manager', 'engineer'],
+  crm: ['admin', 'general_manager', 'project_manager', 'consultant', 'client']
 };
 
-// Mock users for demo
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Anderson',
-    email: 'admin@midroc.com',
-    role: 'admin',
-    department: 'Administration'
-  },
-  {
-    id: '2',
-    name: 'Sarah Mitchell',
-    email: 'gm@midroc.com',
-    role: 'general_manager',
-    department: 'Construction Management'
-  },
-  {
-    id: '3',
-    name: 'Michael Rodriguez',
-    email: 'pm@midroc.com',
-    role: 'project_manager',
-    department: 'Highway Construction'
-  },
-  {
-    id: '4',
-    name: 'Emma Thompson',
-    email: 'consultant@midroc.com',
-    role: 'consultant',
-    department: 'Urban Planning'
-  },
-  {
-    id: '5',
-    name: 'David Chen',
-    email: 'engineer@midroc.com',
-    role: 'engineer',
-    department: 'Structural Engineering'
-  },
-  {
-    id: '6',
-    name: 'Lisa Johnson',
-    email: 'employee@midroc.com',
-    role: 'employee',
-    department: 'General Construction'
-  },
-  {
-    id: '7',
-    name: 'Ahmed Hassan',
-    email: 'client@midroc.com',
-    role: 'client',
-    department: 'External Client'
-  },
-  {
-    id: '8',
-    name: 'Mohamed Ali',
-    email: 'contractor@midroc.com',
-    role: 'contractor',
-    department: 'Construction Contractor'
-  }
-];
-
-// Mock pending users storage
-let pendingUsers: PendingUser[] = [
-  {
-    id: 'pending_1',
-    name: 'Ahmed Mohammed',
-    email: 'ahmed@example.com',
-    role: 'engineer',
-    department: 'Structural Engineering',
-    created_at: '2024-01-16T00:00:00Z',
-    status: 'pending'
-  }
+// Mock users for fallback when Supabase is not configured
+const MOCK_USERS = [
+  { id: '1', email: 'admin@midroc.com', password: 'password', name: 'John Anderson', role: 'admin', department: 'Administration' },
+  { id: '2', email: 'gm@midroc.com', password: 'password', name: 'Sarah Mitchell', role: 'general_manager', department: 'Construction Management' },
+  { id: '3', email: 'pm@midroc.com', password: 'password', name: 'Michael Rodriguez', role: 'project_manager', department: 'Highway Construction' },
+  { id: '4', email: 'consultant@midroc.com', password: 'password', name: 'Emma Thompson', role: 'consultant', department: 'Urban Planning' },
+  { id: '5', email: 'engineer@midroc.com', password: 'password', name: 'David Chen', role: 'engineer', department: 'Structural Engineering' },
+  { id: '6', email: 'client@midroc.com', password: 'password', name: 'Robert Johnson', role: 'client', department: 'Metro Development Authority' },
+  { id: '7', email: 'contractor@midroc.com', password: 'password', name: 'Lisa Davis', role: 'contractor', department: 'Construction Operations' },
+  { id: '8', email: 'employee@midroc.com', password: 'password', name: 'James Wilson', role: 'employee', department: 'General Operations' }
 ];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem('erp_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
-    setLoading(true);
-
-    // Check if Supabase is properly configured
+  const initializeAuth = async () => {
     if (!isSupabaseConfigured) {
-      console.warn('Using mock authentication - Supabase not configured');
-    }
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check mock users first
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      localStorage.setItem('erp_user', JSON.stringify(foundUser));
+      // Use mock authentication
+      const savedUser = localStorage.getItem('mockUser');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
       setLoading(false);
-      return { success: true };
+      return;
     }
 
-    // Check admin-created users
-    const createdUsers = JSON.parse(localStorage.getItem('erp_created_users') || '[]');
-    const createdUser = createdUsers.find((u: any) => u.email === email);
-    if (createdUser) {
-      // For created users, we'll accept any password since it's stored in localStorage
-      // In a real app, passwords would be hashed and verified
-      setUser(createdUser);
-      localStorage.setItem('erp_user', JSON.stringify(createdUser));
+    try {
+      // Get initial session
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setSupabaseUser(session?.user ?? null);
+
+      if (session?.user) {
+        await loadUserProfile(session.user.id);
+      }
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          setSession(session);
+          setSupabaseUser(session?.user ?? null);
+
+          if (session?.user) {
+            await loadUserProfile(session.user.id);
+          } else {
+            setUser(null);
+          }
+        }
+      );
+
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      console.error('Error initializing auth:', error);
+    } finally {
       setLoading(false);
-      return { success: true };
+    }
+  };
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      if (!isSupabaseConfigured) return;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error loading user profile:', error);
+        return;
+      }
+
+      setUser({
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+        department: data.department
+      });
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    if (!isSupabaseConfigured) {
+      // Mock authentication
+      const mockUser = MOCK_USERS.find(u => u.email === email && u.password === password);
+      if (mockUser) {
+        const user: User = {
+          id: mockUser.id,
+          email: mockUser.email,
+          name: mockUser.name,
+          role: mockUser.role,
+          department: mockUser.department
+        };
+        setUser(user);
+        localStorage.setItem('mockUser', JSON.stringify(user));
+        return { success: true };
+      } else {
+        return { success: false, message: 'Invalid email or password' };
+      }
     }
 
-    setLoading(false);
-    return { success: false, message: 'Invalid email or password' };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, message: 'Invalid email or password' };
+        }
+        return { success: false, message: error.message };
+      }
+
+      if (data.user) {
+        await loadUserProfile(data.user.id);
+        return { success: true };
+      }
+
+      return { success: false, message: 'Authentication failed' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, message: 'An unexpected error occurred' };
+    }
   };
 
   const signup = async (name: string, email: string, password: string, role: string): Promise<{ success: boolean; message?: string }> => {
-    setLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email === email);
-    const existingPending = pendingUsers.find(u => u.email === email);
-    
-    if (existingUser || existingPending) {
-      setLoading(false);
-      return { success: false, message: 'An account with this email already exists' };
+    if (!isSupabaseConfigured) {
+      // Mock signup - add to pending users
+      console.log('Mock signup:', { name, email, role });
+      return { 
+        success: true, 
+        message: 'Account created successfully! Please wait for admin approval before signing in.' 
+      };
     }
 
-    // Prevent direct admin/general_manager signup
-    if (role === 'admin' || role === 'general_manager') {
-      setLoading(false);
-      return { success: false, message: 'Admin and General Manager accounts must be created by existing administrators' };
+    try {
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role,
+          }
+        }
+      });
+
+      if (authError) {
+        return { success: false, message: authError.message };
+      }
+
+      // Then create the user profile with pending status
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([{
+            id: authData.user.id,
+            email,
+            name,
+            role,
+            status: 'pending'
+          }]);
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+        }
+      }
+
+      return { 
+        success: true, 
+        message: 'Account created successfully! Please wait for admin approval before signing in.' 
+      };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return { success: false, message: 'An unexpected error occurred during registration' };
     }
-    
-    // Add user to pending approval list instead of directly creating account
-    const newPendingUser: PendingUser = {
-      id: `pending_${Date.now()}`,
-      name,
-      email,
-      role: role as 'project_manager' | 'engineer' | 'consultant' | 'employee',
-      department: 'General',
-      created_at: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    pendingUsers.push(newPendingUser);
-    setLoading(false);
-    return { 
-      success: true, 
-      message: 'Account created successfully! Your registration is pending admin approval. You will be notified once approved.' 
-    };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('erp_user');
+  const logout = async (): Promise<void> => {
+    if (!isSupabaseConfigured) {
+      // Mock logout
+      setUser(null);
+      localStorage.removeItem('mockUser');
+      return;
+    }
+
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSupabaseUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const refreshUser = async (): Promise<void> => {
+    if (!isSupabaseConfigured || !supabaseUser) return;
+    await loadUserProfile(supabaseUser.id);
   };
 
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
-    const userPermissions = ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS] || [];
-    return userPermissions.includes(permission);
+    const rolePermissions = ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS] || [];
+    return rolePermissions.includes(permission);
   };
 
   const hasRole = (roles: string[]): boolean => {
@@ -302,37 +349,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const canAccessModule = (module: string): boolean => {
     if (!user) return false;
-    const allowedRoles = MODULE_ACCESS[module as keyof typeof MODULE_ACCESS] || [];
-    return allowedRoles.includes(user.role);
+    const moduleAccess = MODULE_ACCESS[module as keyof typeof MODULE_ACCESS] || [];
+    return moduleAccess.includes(user.role);
   };
 
-  const getPendingUsers = (): PendingUser[] => {
-    return pendingUsers.filter(u => u.status === 'pending');
+  const getPendingUsers = async (): Promise<PendingUser[]> => {
+    try {
+      const users = await DatabaseService.getPendingUsers();
+      return users.map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        department: u.department || '',
+        created_at: u.created_at,
+        status: u.status as 'pending' | 'approved' | 'rejected'
+      }));
+    } catch (error) {
+      console.error('Error getting pending users:', error);
+      return [];
+    }
   };
 
   const approveUser = async (userId: string): Promise<boolean> => {
     try {
-      const pendingUser = pendingUsers.find(u => u.id === userId);
-      if (!pendingUser) return false;
-
-      // Create approved user
-      const newUser: User = {
-        id: Date.now().toString(),
-        name: pendingUser.name,
-        email: pendingUser.email,
-        role: pendingUser.role as any,
-        department: pendingUser.department
-      };
-
-      // Add to approved users
-      mockUsers.push(newUser);
-      
-      // Update pending user status
-      pendingUsers = pendingUsers.map(u => 
-        u.id === userId ? { ...u, status: 'approved' as const } : u
-      );
-
-      return true;
+      const success = await DatabaseService.approveUser(userId);
+      if (success && isSupabaseConfigured) {
+        // Also update auth status if needed
+        // This would typically involve enabling the user's auth account
+      }
+      return success;
     } catch (error) {
       console.error('Error approving user:', error);
       return false;
@@ -341,41 +387,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const rejectUser = async (userId: string): Promise<boolean> => {
     try {
-      pendingUsers = pendingUsers.map(u => 
-        u.id === userId ? { ...u, status: 'rejected' as const } : u
-      );
-      return true;
+      const success = await DatabaseService.rejectUser(userId);
+      if (success && isSupabaseConfigured) {
+        // Also disable the user's auth account if needed
+      }
+      return success;
     } catch (error) {
       console.error('Error rejecting user:', error);
       return false;
     }
   };
 
+  const isAuthenticated = !!user;
+
+  const value: AuthContextType = {
+    user,
+    supabaseUser,
+    session,
+    login,
+    signup,
+    logout,
+    isAuthenticated,
+    loading,
+    hasPermission,
+    hasRole,
+    canAccessModule,
+    getPendingUsers,
+    approveUser,
+    rejectUser,
+    refreshUser,
+  };
+
   return (
-    <AuthContext.Provider 
-      value={{
-        user,
-        login,
-        signup,
-        logout,
-        isAuthenticated: !!user,
-        loading,
-        hasPermission,
-        hasRole,
-        canAccessModule,
-        getPendingUsers,
-        approveUser,
-        rejectUser
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (undefined === context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
