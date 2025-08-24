@@ -103,6 +103,8 @@ const AppContent: React.FC = () => {
         return <QualityAuditModule />;
       case 'crm':
         return <CRMModule />;
+      case 'api-test':
+        return <ApiTestRoute />;
       default:
         return <DashboardModule />;
     }
