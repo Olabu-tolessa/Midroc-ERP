@@ -624,41 +624,76 @@ const ContractualManagementModule: React.FC = () => {
       effective_date: new Date().toISOString().split('T')[0]
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      
-      const newForm: ContractForm = {
-        id: Date.now().toString(),
-        title: `${formData.project_name} - ${FORM_TEMPLATES[formData.template_type as keyof typeof FORM_TEMPLATES].title}`,
-        template_type: formData.template_type as any,
-        client_name: formData.client_name,
-        contractor_name: formData.contractor_name,
-        project_name: formData.project_name,
-        site_location: formData.site_location,
-        effective_date: formData.effective_date,
-        form_data: JSON.parse(JSON.stringify(FORM_TEMPLATES[formData.template_type as keyof typeof FORM_TEMPLATES].fields)),
-        status: 'draft',
-        created_by: user?.id || '',
-        created_by_name: user?.name || '',
-        created_at: new Date().toISOString()
-      };
 
-      setContractForms(prev => [...prev, newForm]);
-      setShowNewFormModal(false);
+      try {
+        const newFormData: Omit<ContractForm, 'id' | 'created_at' | 'updated_at'> = {
+          title: `${formData.project_name} - ${FORM_TEMPLATES[formData.template_type as keyof typeof FORM_TEMPLATES].title}`,
+          template_type: formData.template_type as any,
+          client_name: formData.client_name,
+          contractor_name: formData.contractor_name,
+          project_name: formData.project_name,
+          site_location: formData.site_location,
+          effective_date: formData.effective_date,
+          form_data: JSON.parse(JSON.stringify(FORM_TEMPLATES[formData.template_type as keyof typeof FORM_TEMPLATES].fields)),
+          status: 'draft',
+          created_by: user?.id || '',
+          created_by_name: user?.name || ''
+        };
 
-      // Show the newly created form details
-      setSelectedForm(newForm);
-      setShowFormDetailsModal(true);
+        let createdForm: ContractForm;
 
-      // Reset form
-      setFormData({
-        template_type: 'document_acquisition',
-        client_name: '',
-        contractor_name: '',
-        project_name: '',
-        site_location: '',
-        effective_date: new Date().toISOString().split('T')[0]
-      });
+        if (isDatabaseConfigured && contractFormService) {
+          // Save to database
+          console.log('💾 Creating form in database...', newFormData);
+          createdForm = await contractFormService.createContractForm(newFormData);
+          console.log('✅ Form created successfully:', createdForm);
+
+          setNotification({
+            type: 'success',
+            message: 'Contract form created and saved to database!'
+          });
+        } else {
+          // Fallback to local state
+          createdForm = {
+            ...newFormData,
+            id: Date.now().toString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          setContractForms(prev => [...prev, createdForm]);
+
+          setNotification({
+            type: 'info',
+            message: 'Contract form created locally (database not connected)'
+          });
+        }
+
+        setShowNewFormModal(false);
+        setSelectedForm(createdForm);
+        setShowFormDetailsModal(true);
+
+        // Reset form
+        setFormData({
+          template_type: 'document_acquisition',
+          client_name: '',
+          contractor_name: '',
+          project_name: '',
+          site_location: '',
+          effective_date: new Date().toISOString().split('T')[0]
+        });
+
+        setTimeout(() => setNotification(null), 3000);
+
+      } catch (error) {
+        console.error('❌ Error creating form:', error);
+        setNotification({
+          type: 'warning',
+          message: 'Failed to create contract form. Please try again.'
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
     };
 
     return (
