@@ -1,0 +1,30 @@
+# Enable URL Rewriting
+RewriteEngine On
+
+# CORS Headers for all requests
+Header always set Access-Control-Allow-Origin "http://localhost:5173"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+Header always set Access-Control-Allow-Credentials "true"
+
+# Handle preflight OPTIONS requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# API Routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Contract routes
+RewriteRule ^api/contracts/?$ api/contracts.php [L,QSA]
+RewriteRule ^api/contracts/([0-9a-zA-Z-]+)/?$ api/contracts.php [L,QSA]
+RewriteRule ^api/contract_forms/?$ api/contracts.php [L,QSA]
+RewriteRule ^api/contract_forms/([0-9a-zA-Z-]+)/?$ api/contracts.php [L,QSA]
+
+# Supervision routes
+RewriteRule ^api/supervision_reports/?$ api/supervision.php [L,QSA]
+RewriteRule ^api/supervision_reports/([0-9a-zA-Z-]+)/?$ api/supervision.php [L,QSA]
+RewriteRule ^api/quality_safety_reports/?$ api/supervision.php [L,QSA]
+RewriteRule ^api/quality_safety_reports/([0-9a-zA-Z-]+)/?$ api/supervision.php [L,QSA]
+RewriteRule ^api/quality_tasks/?$ api/supervision.php [L,QSA]
+RewriteRule ^api/quality_tasks/([0-9a-zA-Z-]+)/?$ api/supervision.php [L,QSA]
