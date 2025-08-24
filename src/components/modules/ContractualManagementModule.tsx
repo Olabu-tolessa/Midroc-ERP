@@ -6,15 +6,66 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
-import {
-  contractService,
-  contractFormService,
-  subscribeToContracts,
-  subscribeToContractForms,
-  Contract,
-  ContractForm
-} from '../../services/contractService';
-import { isSupabaseConfigured } from '../../lib/supabase';
+import { getContractServices, isDatabaseConfigured } from '../../lib/database';
+
+// Dynamic imports for database services
+let contractService: any;
+let contractFormService: any;
+let subscribeToContracts: any;
+let subscribeToContractForms: any;
+
+// Interface definitions
+interface Contract {
+  id: string;
+  title: string;
+  client_name: string;
+  contract_type: string;
+  value: number;
+  start_date: string;
+  end_date: string;
+  status: string;
+  approval_status: string;
+  compliance_checks: {
+    legal_review: boolean;
+    financial_review: boolean;
+    technical_review: boolean;
+  };
+  milestones: Array<{
+    id: string;
+    title: string;
+    date: string;
+    status: string;
+  }>;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ContractForm {
+  id: string;
+  title: string;
+  template_type: string;
+  client_name: string;
+  contractor_name?: string;
+  project_name?: string;
+  site_location?: string;
+  effective_date?: string;
+  form_data: any;
+  client_signature?: string;
+  contractor_signature?: string;
+  client_signed_at?: string;
+  contractor_signed_at?: string;
+  client_assigned_to?: string;
+  contractor_assigned_to?: string;
+  client_user_name?: string;
+  contractor_user_name?: string;
+  status: string;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+}
 
 // Interfaces now imported from contractService
 
@@ -125,50 +176,68 @@ const ContractualManagementModule: React.FC = () => {
   const isAuthorized = user?.role === 'admin' || user?.role === 'general_manager';
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Real-time subscriptions for live updates
+  // Initialize database services and real-time subscriptions
   useEffect(() => {
-    loadData();
+    const initializeServices = async () => {
+      try {
+        const services = await getContractServices();
+        contractService = services.contractService;
+        contractFormService = services.contractFormService;
+        subscribeToContracts = services.subscribeToContracts;
+        subscribeToContractForms = services.subscribeToContractForms;
 
-    // Set up real-time subscriptions if Supabase is configured
-    if (isSupabaseConfigured) {
-      const unsubscribeContracts = subscribeToContracts((updatedContracts) => {
-        setContracts(updatedContracts);
-      });
+        await loadData();
 
-      const unsubscribeContractForms = subscribeToContractForms((updatedForms) => {
-        setContractForms(updatedForms);
+        // Set up real-time subscriptions if database is configured
+        if (isDatabaseConfigured) {
+          const unsubscribeContracts = subscribeToContracts((updatedContracts: Contract[]) => {
+            setContracts(updatedContracts);
+          });
 
-        // Check for newly signed forms and notify admins
-        if (isAuthorized) {
-          const recentlySignedForms = updatedForms.filter(form =>
-            (form.status === 'signed' || form.status === 'completed') &&
-            form.contractor_signed_at &&
-            new Date(form.contractor_signed_at).getTime() > Date.now() - 30000
-          );
+          const unsubscribeContractForms = subscribeToContractForms((updatedForms: ContractForm[]) => {
+            setContractForms(updatedForms);
 
-          if (recentlySignedForms.length > 0) {
-            setNotification({
-              type: 'success',
-              message: `${recentlySignedForms.length} contract form(s) have been fully signed and are ready for review!`
-            });
-            setTimeout(() => setNotification(null), 5000);
-          }
+            // Check for newly signed forms and notify admins
+            if (isAuthorized) {
+              const recentlySignedForms = updatedForms.filter(form =>
+                (form.status === 'signed' || form.status === 'completed') &&
+                form.contractor_signed_at &&
+                new Date(form.contractor_signed_at).getTime() > Date.now() - 30000
+              );
+
+              if (recentlySignedForms.length > 0) {
+                setNotification({
+                  type: 'success',
+                  message: `${recentlySignedForms.length} contract form(s) have been fully signed and are ready for review!`
+                });
+                setTimeout(() => setNotification(null), 5000);
+              }
+            }
+          });
+
+          return () => {
+            unsubscribeContracts();
+            unsubscribeContractForms();
+          };
         }
-      });
+      } catch (error) {
+        console.error('Error initializing database services:', error);
+        setNotification({
+          type: 'warning',
+          message: 'Failed to connect to database. Please check your configuration.'
+        });
+      }
+    };
 
-      return () => {
-        unsubscribeContracts();
-        unsubscribeContractForms();
-      };
-    }
+    initializeServices();
   }, [isAuthorized]);
 
   const loadData = async () => {
     try {
       setLoading(true);
 
-      if (isSupabaseConfigured) {
-        // Load real data from Supabase
+      if (isDatabaseConfigured && contractService && contractFormService) {
+        // Load real data from database
         const [contractsData, formsData] = await Promise.all([
           contractService.getContracts(),
           contractFormService.getContractForms()
@@ -176,6 +245,11 @@ const ContractualManagementModule: React.FC = () => {
 
         setContracts(contractsData);
         setContractForms(formsData);
+
+        console.log('✅ Database loaded successfully:', {
+          contracts: contractsData.length,
+          forms: formsData.length
+        });
       } else {
         // Fallback to mock data when Supabase is not configured
         const mockContracts: Contract[] = [
@@ -281,9 +355,10 @@ const ContractualManagementModule: React.FC = () => {
         };
 
         let updatedForm;
-        if (isSupabaseConfigured) {
+        if (isDatabaseConfigured && contractFormService) {
           // Update in database
           updatedForm = await contractFormService.assignContractForm(selectedForm.id, assignments);
+          console.log('✅ Form assigned in database:', updatedForm);
         } else {
           // Fallback to local state update
           updatedForm = { ...selectedForm, ...assignments };
