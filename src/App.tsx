@@ -15,6 +15,7 @@ import SupervisionModule from './components/modules/SupervisionModule';
 import ConsultingModule from './components/modules/ConsultingModule';
 import ContractualManagementModule from './components/modules/ContractualManagementModule';
 import UserManagementModule from './components/modules/UserManagementModule';
+import ApiTestRoute from './components/debug/ApiTestRoute';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -27,7 +28,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1);
-      if (hash && ['dashboard', 'projects', 'users', 'contracts', 'hr', 'finance', 'qa', 'crm', 'supervision', 'consulting'].includes(hash)) {
+      if (hash && ['dashboard', 'projects', 'users', 'contracts', 'hr', 'finance', 'qa', 'crm', 'supervision', 'consulting', 'api-test'].includes(hash)) {
         setCurrentModule(hash);
       }
     };
